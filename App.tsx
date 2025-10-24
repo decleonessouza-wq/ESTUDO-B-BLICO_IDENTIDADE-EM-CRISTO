@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { Screen } from './types';
 import WelcomeScreen from './screens/WelcomeScreen';
@@ -12,13 +12,6 @@ import CommunityWallScreen from './screens/CommunityWallScreen';
 
 // ScreenRenderer agora é um componente puro que recebe a tela a ser renderizada como prop.
 const ScreenRenderer: React.FC<{ screen: Screen }> = ({ screen }) => {
-  useEffect(() => {
-    // Garante que os ícones sejam renderizados quando os componentes mudam
-    if ((window as any).lucide) {
-      (window as any).lucide.createIcons();
-    }
-  }); // Re-executa em cada renderização para capturar novos ícones
-
   switch (screen) {
     case Screen.Welcome:
       return <WelcomeScreen />;
@@ -43,28 +36,13 @@ const ScreenRenderer: React.FC<{ screen: Screen }> = ({ screen }) => {
 
 const App: React.FC = () => {
   const { currentScreen } = useAppContext();
-  // Estado para gerenciar qual tela está visível e sua animação
-  const [displayedScreen, setDisplayedScreen] = useState(currentScreen);
-  const [animationClass, setAnimationClass] = useState('animate-fade-in-up');
 
-  useEffect(() => {
-    // Quando a tela no contexto muda, aciona a sequência de fade-out/fade-in
-    if (currentScreen !== displayedScreen) {
-      setAnimationClass('animate-fade-out-up'); // Inicia o fade-out
-      
-      const timer = setTimeout(() => {
-        setDisplayedScreen(currentScreen); // Troca o conteúdo após o fade-out
-        setAnimationClass('animate-fade-in-up'); // Inicia o fade-in
-      }, 500); // Deve corresponder à duração da animação CSS
-
-      return () => clearTimeout(timer);
-    }
-  }, [currentScreen, displayedScreen]);
-
+  // Usar a prop `key` no container força o React a remontar a árvore de componentes
+  // quando `currentScreen` muda. Esta é uma maneira simples e robusta de acionar
+  // uma animação de entrada em cada mudança de tela, corrigindo o bug da tela em branco.
   return (
-    // O div wrapper agora tem sua classe controlada pelo estado
-    <div className={`w-full min-h-full flex items-center justify-center ${animationClass}`}>
-        <ScreenRenderer screen={displayedScreen} />
+    <div key={currentScreen} className="w-full min-h-full flex items-center justify-center animate-fade-in">
+        <ScreenRenderer screen={currentScreen} />
     </div>
   )
 }
@@ -72,9 +50,14 @@ const App: React.FC = () => {
 const AppWrapper: React.FC = () => {
   return (
     <AppProvider>
-      <main className="w-screen h-screen bg-gray-900 overflow-auto bg-gradient-to-br from-gray-900 via-black to-blue-900">
-        <App />
-      </main>
+      <div className="min-h-screen flex flex-col bg-gray-900">
+        <main className="flex-grow w-full overflow-auto bg-gradient-to-br from-gray-900 via-black to-blue-900">
+          <App />
+        </main>
+        <footer className="w-full text-center py-4 text-xs text-gray-500">
+          ©2025 - ESTUDO BÍBLICO: IDENTIDADE EM CRISTO - PRODUCED BY DECLEONE ANDRADE.
+        </footer>
+      </div>
     </AppProvider>
   );
 };

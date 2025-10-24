@@ -7,6 +7,7 @@ import confetti from 'canvas-confetti';
 interface QuizProps {
   questions: QuizQuestion[];
   onQuizComplete: (score: number) => void;
+  onWatchVideoAgain: () => void;
 }
 
 interface ShuffledOption {
@@ -14,7 +15,7 @@ interface ShuffledOption {
   originalIndex: number;
 }
 
-const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete }) => {
+const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgain }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswerOriginalIndex, setSelectedAnswerOriginalIndex] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -40,32 +41,43 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete }) => {
   useEffect(() => {
     shuffleOptions();
   }, [currentQuestion, shuffleOptions]);
+  
+  useEffect(() => {
+    // Re-render icons on mount and when feedback appears.
+    const timerId = setTimeout(() => {
+      if ((window as any).lucide) {
+        (window as any).lucide.createIcons();
+      }
+    }, 0);
+    return () => clearTimeout(timerId);
+  }, [showFeedback]);
 
   useEffect(() => {
-    if ((window as any).lucide) {
-      (window as any).lucide.createIcons();
-    }
-  }, [showFeedback]);
+    // This effect handles the confetti animation as a side effect of the answer being correct.
+    // It runs only after the component has re-rendered to show the feedback.
+    if (isCorrect && showFeedback) {
+      const duration = 2 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
   
-  const triggerConfetti = () => {
-    const duration = 2 * 1000;
-    const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
-    function randomInRange(min: number, max: number) {
-      return Math.random() * (max - min) + min;
-    }
-
-    const interval = window.setInterval(() => {
-      const timeLeft = animationEnd - Date.now();
-      if (timeLeft <= 0) {
-        return clearInterval(interval);
+      function randomInRange(min: number, max: number) {
+        return Math.random() * (max - min) + min;
       }
-      const particleCount = 50 * (timeLeft / duration);
-      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
-      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
-    }, 250);
-  };
+  
+      const interval = window.setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+        const particleCount = 50 * (timeLeft / duration);
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+      }, 250);
+  
+      // Cleanup the interval when the component unmounts or dependencies change.
+      return () => clearInterval(interval);
+    }
+  }, [isCorrect, showFeedback]);
 
   const handleAnswerSelect = (originalIndex: number) => {
     if (!showFeedback && !incorrectlySelected.has(originalIndex)) {
@@ -84,7 +96,6 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete }) => {
       setIsCorrect(true);
       setShowFeedback(true);
       playCorrectSound();
-      triggerConfetti();
     } else {
       setIncorrectlySelected(prev => new Set(prev).add(selectedAnswerOriginalIndex));
       setAttempts(prev => prev + 1);
@@ -142,6 +153,16 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete }) => {
         </div>
         <div className="w-full bg-gray-700 rounded-full h-2.5 mt-2">
           <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}></div>
+        </div>
+        <div className="text-right mt-2">
+            <button
+                onClick={onWatchVideoAgain}
+                className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors p-1 rounded-md hover:bg-gray-700 ml-auto"
+                aria-label="Assistir ao vídeo novamente"
+            >
+                <i data-lucide="video" className="w-4 h-4"></i>
+                <span>Assistir ao Vídeo Novamente</span>
+            </button>
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Screen } from '../types';
@@ -14,10 +15,13 @@ const RewardsScreen: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Make sure icons are rendered
-    if ((window as any).lucide) {
-      (window as any).lucide.createIcons();
-    }
+    // Use a timeout to ensure React has finished its render cycle before Lucide modifies the DOM.
+    const timerId = setTimeout(() => {
+      if ((window as any).lucide) {
+        (window as any).lucide.createIcons();
+      }
+    }, 0);
+    return () => clearTimeout(timerId);
   }, []);
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {

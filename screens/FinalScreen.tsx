@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import AnimatedScreen from '../components/AnimatedScreen';
 import ActionButton from '../components/ActionButton';
@@ -6,6 +6,16 @@ import { Screen } from '../types';
 
 const FinalScreen: React.FC = () => {
   const { userName, resetJourney, navigateTo } = useAppContext();
+
+  useEffect(() => {
+    // Use a timeout to ensure React has finished its render cycle before Lucide modifies the DOM.
+    const timerId = setTimeout(() => {
+      if ((window as any).lucide) {
+        (window as any).lucide.createIcons();
+      }
+    }, 0);
+    return () => clearTimeout(timerId);
+  }, []);
 
   return (
     <AnimatedScreen>
@@ -17,7 +27,7 @@ const FinalScreen: React.FC = () => {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <ActionButton onClick={resetJourney}>
-                Refazer Jornada
+                Refazer o Estudo
             </ActionButton>
             <ActionButton onClick={() => navigateTo(Screen.CommunityWall)} className="bg-gradient-to-r from-teal-500 to-cyan-500 focus:ring-teal-300">
                 Visitar Mural da Comunidade

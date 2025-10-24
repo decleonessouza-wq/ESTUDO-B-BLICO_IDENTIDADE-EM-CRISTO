@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Screen } from '../types';
 import ActionButton from '../components/ActionButton';
@@ -7,6 +7,16 @@ import AnimatedScreen from '../components/AnimatedScreen';
 
 const InstructionsScreen: React.FC = () => {
   const { userName, navigateTo } = useAppContext();
+
+  useEffect(() => {
+    // Use a timeout to ensure React has finished its render cycle before Lucide modifies the DOM.
+    const timerId = setTimeout(() => {
+      if ((window as any).lucide) {
+        (window as any).lucide.createIcons();
+      }
+    }, 0);
+    return () => clearTimeout(timerId);
+  }, []);
 
   const instructions = [
     { icon: 'Video', text: 'Assista a um vídeo de estudo em cada uma das 6 etapas.' },

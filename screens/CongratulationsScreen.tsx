@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Screen } from '../types';
 import ActionButton from '../components/ActionButton';
@@ -10,10 +10,16 @@ const CongratulationsScreen: React.FC = () => {
   const { userName, totalScore, navigateTo } = useAppContext();
   const playSuccessSound = useSound('https://www.soundjay.com/human/sounds/applause-01.mp3', 0.3);
 
-  React.useEffect(() => {
+  useEffect(() => {
     playSuccessSound();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // Use a timeout to ensure React has finished its render cycle before Lucide modifies the DOM.
+    const timerId = setTimeout(() => {
+      if ((window as any).lucide) {
+        (window as any).lucide.createIcons();
+      }
+    }, 0);
+    return () => clearTimeout(timerId);
+  }, [playSuccessSound]);
 
   return (
     <AnimatedScreen>

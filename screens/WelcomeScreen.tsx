@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Screen } from '../types';
@@ -22,10 +21,16 @@ const WelcomeScreen: React.FC = () => {
         <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300 mb-4 animate-fade-in-down">
           Identidade em Cristo
         </h1>
-        <p className="text-xl md:text-2xl text-gray-300 mb-12 animate-fade-in-up">
+        <p 
+          className="text-xl md:text-2xl text-gray-300 mb-12 animate-fade-in-up"
+          style={{ animationDelay: '0.3s' }}
+        >
           Quem sou eu aos olhos de Deus?
         </p>
-        <div className="w-full max-w-sm mx-auto">
+        <div 
+          className="w-full max-w-sm mx-auto animate-fade-in-up"
+          style={{ animationDelay: '0.6s' }}
+        >
           <input
             type="text"
             value={name}

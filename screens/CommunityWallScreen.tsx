@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Screen } from '../types';
 import ActionButton from '../components/ActionButton';
@@ -10,6 +11,16 @@ const CommunityWallScreen: React.FC = () => {
   const [newPost, setNewPost] = useState('');
   const playPostSound = useSound('https://www.soundjay.com/communication/sounds/send_message.mp3', 0.5);
   const playLikeSound = useSound('https://www.soundjay.com/buttons/sounds/button-16.mp3', 0.5);
+
+  useEffect(() => {
+    // Use a timeout to ensure React has finished its render cycle before Lucide modifies the DOM.
+    const timerId = setTimeout(() => {
+      if ((window as any).lucide) {
+        (window as any).lucide.createIcons();
+      }
+    }, 0);
+    return () => clearTimeout(timerId);
+  }, [posts]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
