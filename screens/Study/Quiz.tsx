@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { QuizQuestion } from '../../types';
 import ActionButton from '../../components/ActionButton';
 import { useSound } from '../../hooks/useSound';
 import confetti from 'canvas-confetti';
+import { SOUNDS } from '../../constants';
 
 interface QuizProps {
   questions: QuizQuestion[];
@@ -25,8 +27,9 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgai
   const [incorrectlySelected, setIncorrectlySelected] = useState<Set<number>>(new Set());
   const [shuffledOptions, setShuffledOptions] = useState<ShuffledOption[]>([]);
 
-  const playCorrectSound = useSound('https://www.soundjay.com/buttons/sounds/button-3.mp3', 0.4);
-  const playIncorrectSound = useSound('https://www.soundjay.com/buttons/sounds/button-10.mp3', 0.4);
+  const playCorrectSound = useSound(SOUNDS.CORRECT.id, 0.4);
+  const playIncorrectSound = useSound(SOUNDS.INCORRECT.id, 0.4);
+  const playToggleSound = useSound(SOUNDS.TOGGLE.id, 0.4);
 
   const currentQuestion = useMemo(() => questions[currentQuestionIndex], [questions, currentQuestionIndex]);
 
@@ -43,7 +46,6 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgai
   }, [currentQuestion, shuffleOptions]);
   
   useEffect(() => {
-    // Re-render icons on mount and when feedback appears.
     const timerId = setTimeout(() => {
       if ((window as any).lucide) {
         (window as any).lucide.createIcons();
@@ -53,8 +55,6 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgai
   }, [showFeedback]);
 
   useEffect(() => {
-    // This effect handles the confetti animation as a side effect of the answer being correct.
-    // It runs only after the component has re-rendered to show the feedback.
     if (isCorrect && showFeedback) {
       const duration = 2 * 1000;
       const animationEnd = Date.now() + duration;
@@ -74,13 +74,13 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgai
         confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
       }, 250);
   
-      // Cleanup the interval when the component unmounts or dependencies change.
       return () => clearInterval(interval);
     }
   }, [isCorrect, showFeedback]);
 
   const handleAnswerSelect = (originalIndex: number) => {
     if (!showFeedback && !incorrectlySelected.has(originalIndex)) {
+      playToggleSound();
       setSelectedAnswerOriginalIndex(originalIndex);
     }
   };
@@ -101,7 +101,7 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgai
       setAttempts(prev => prev + 1);
       setSelectedAnswerOriginalIndex(null);
       playIncorrectSound();
-      shuffleOptions(); // Re-shuffle on incorrect attempt
+      shuffleOptions();
       if (attempts >= 4) {
           setIsCorrect(false);
           setShowFeedback(true);
@@ -121,7 +121,6 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgai
     setAttempts(1);
     setIncorrectlySelected(new Set());
     setCurrentQuestionIndex(prev => prev + 1);
-    // shuffleOptions will be called by the useEffect for the new question
   };
 
   const getButtonClass = (originalIndex: number) => {

@@ -33,6 +33,13 @@ const FinalScreen: React.FC = () => {
                 Visitar Mural da Comunidade
             </ActionButton>
         </div>
+        <div className="mt-6 border-t border-gray-700 pt-6">
+            <p className="text-sm text-gray-400 mb-3">Compartilhe seu progresso com o administrador do estudo:</p>
+            <ActionButton onClick={() => navigateTo(Screen.ShareReport)} className="bg-gradient-to-r from-purple-500 to-indigo-500 focus:ring-purple-300">
+                <i data-lucide="share-2" className="inline-block mr-2 w-5 h-5"></i>
+                Compartilhar Relatório
+            </ActionButton>
+        </div>
       </div>
     </AnimatedScreen>
   );

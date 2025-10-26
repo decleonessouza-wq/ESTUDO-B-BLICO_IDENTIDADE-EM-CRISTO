@@ -5,10 +5,11 @@ import { Screen } from '../types';
 import ActionButton from '../components/ActionButton';
 import AnimatedScreen from '../components/AnimatedScreen';
 import { useSound } from '../hooks/useSound';
+import { SOUNDS } from '../constants';
 
 const CongratulationsScreen: React.FC = () => {
   const { userName, totalScore, navigateTo } = useAppContext();
-  const playSuccessSound = useSound('https://www.soundjay.com/human/sounds/applause-01.mp3', 0.3);
+  const playSuccessSound = useSound(SOUNDS.SUCCESS.id, 0.3);
 
   useEffect(() => {
     playSuccessSound();

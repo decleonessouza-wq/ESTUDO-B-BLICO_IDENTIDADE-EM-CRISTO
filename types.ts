@@ -1,5 +1,6 @@
 // Fix: Create type definitions for the application
 export enum Screen {
+  SplashScreen,
   Welcome,
   Instructions,
   Study,
@@ -8,6 +9,7 @@ export enum Screen {
   Rewards,
   Final,
   CommunityWall,
+  ShareReport,
 }
 
 export interface QuizQuestion {
@@ -26,6 +28,12 @@ export interface StageData {
   questions: QuizQuestion[];
 }
 
+export interface Comment {
+  id: number;
+  author: string;
+  message: string;
+}
+
 export interface Post {
   id: number;
   author: string;
@@ -33,6 +41,7 @@ export interface Post {
   likes: number;
   isLiked: boolean;
   isUserPost: boolean;
+  comments: Comment[];
 }
 
 export interface StageProgress {

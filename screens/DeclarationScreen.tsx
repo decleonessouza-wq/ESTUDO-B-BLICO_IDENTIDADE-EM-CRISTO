@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Screen } from '../types';
-import { DECLARATIONS } from '../constants';
+import { DECLARATIONS, SOUNDS } from '../constants';
 import ActionButton from '../components/ActionButton';
 import AnimatedScreen from '../components/AnimatedScreen';
 import { useSound } from '../hooks/useSound';
@@ -10,7 +10,7 @@ import { useSound } from '../hooks/useSound';
 const DeclarationScreen: React.FC = () => {
   const { navigateTo } = useAppContext();
   const [declared, setDeclared] = useState<Set<number>>(new Set());
-  const playDeclareSound = useSound('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3', 0.5);
+  const playDeclareSound = useSound(SOUNDS.DECLARE.id, 0.5);
 
   useEffect(() => {
     // Use a timeout to ensure React has finished its render cycle before Lucide modifies the DOM.

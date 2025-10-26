@@ -1,11 +1,15 @@
-import React, { useState, useMemo, useEffect } from 'react';
+
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Screen } from '../types';
+// FIX: Import `StageProgress` to use it for type casting.
+import { Screen, StageProgress } from '../types';
 import ActionButton from '../components/ActionButton';
 import AnimatedScreen from '../components/AnimatedScreen';
 import Quiz from './Study/Quiz';
 import Reflection from './Study/Reflection';
 import StageStepper from '../components/StageStepper';
+import { useSound } from '../hooks/useSound';
+import { SOUNDS, QUIZ_BGM_URLS } from '../constants';
 
 type StudyStep = 'video' | 'quiz' | 'reflection';
 
@@ -18,13 +22,19 @@ const StudyScreen: React.FC = () => {
     setCurrentStageId,
     stageProgress,
     userName,
+    isAudioUnlocked,
+    // Fix: Get bgmUrls from context to use custom music.
+    bgmUrls,
   } = useAppContext();
   
   const [studyStep, setStudyStep] = useState<StudyStep>('video');
   const [currentQuizScore, setCurrentQuizScore] = useState(0);
+  const playStageCompleteSound = useSound(SOUNDS.STAGE_COMPLETE.id, 0.4);
+  const playClickSound = useSound(SOUNDS.CLICK.id, 0.3);
+  const bgmRef = useRef<HTMLAudioElement | null>(null);
   
   const currentStageData = useMemo(() => stagesData.find(s => s.id === currentStageId), [stagesData, currentStageId]);
-
+  
   // If stage data is not found for any reason, redirect to welcome to prevent errors.
   useEffect(() => {
     if (!currentStageData) {
@@ -49,12 +59,71 @@ const StudyScreen: React.FC = () => {
     return () => clearTimeout(timerId);
   }, [currentStageId, studyStep]);
 
+  // Effect to manage background music for the quiz
+  useEffect(() => {
+    if (studyStep === 'quiz' && isAudioUnlocked && currentStageData) {
+      const stageIndex = currentStageData.id - 1;
+      const audioUrl = (bgmUrls && bgmUrls[stageIndex]) || QUIZ_BGM_URLS[stageIndex % QUIZ_BGM_URLS.length];
+      
+      const currentBgm = bgmRef.current;
+      
+      // If no valid URL, stop any playing music
+      if (!audioUrl) {
+          if (currentBgm) {
+              currentBgm.pause();
+              bgmRef.current = null;
+          }
+          return;
+      }
+      
+      // If the correct music is already loaded, ensure it's playing
+      if (currentBgm && currentBgm.src === audioUrl) {
+          if (currentBgm.paused) {
+            currentBgm.play().catch(e => console.error("BGM resume failed:", e));
+          }
+          return;
+      }
+      
+      // If other music is playing, pause it
+      if (currentBgm) {
+        currentBgm.pause();
+      }
+      
+      // Create and play new BGM
+      const newBgm = new Audio(audioUrl);
+      newBgm.loop = true;
+      newBgm.volume = 0.2;
+      newBgm.play().catch(e => {
+        // Only log error if it's not the benign interruption error
+        if (e.name !== 'AbortError') {
+          console.error("BGM play failed:", e);
+        }
+      });
+      bgmRef.current = newBgm;
+
+    } else if (bgmRef.current) {
+      // If not in quiz step, pause the music
+      bgmRef.current.pause();
+    }
+  }, [studyStep, currentStageData, isAudioUnlocked, bgmUrls]);
+
+  // Cleanup effect to stop music when the component unmounts
+  useEffect(() => {
+    return () => {
+        if (bgmRef.current) {
+            bgmRef.current.pause();
+            bgmRef.current = null;
+        }
+    };
+  }, []);
+
 
   if (!currentStageData) {
     return null; // Render nothing while redirecting
   }
 
   const handleGoBack = () => {
+    playClickSound();
     if (currentStageId > 1) {
       setCurrentStageId(currentStageId - 1);
     }
@@ -66,6 +135,7 @@ const StudyScreen: React.FC = () => {
   };
 
   const handleReflectionComplete = (reflectionText: string) => {
+    playStageCompleteSound();
     updateStageProgress(currentStageId, currentQuizScore, reflectionText);
     
     const isLastStage = currentStageId === stagesData.length;
@@ -77,7 +147,8 @@ const StudyScreen: React.FC = () => {
   };
 
   const completedStagesCount = useMemo(() => {
-    return Object.values(stageProgress).filter(p => p.completed).length;
+    // FIX: Cast the parameter `p` to `StageProgress` to access the `completed` property safely.
+    return Object.values(stageProgress).filter(p => (p as StageProgress).completed).length;
   }, [stageProgress]);
 
   const progressPercentage = stagesData.length > 0 ? (completedStagesCount / stagesData.length) * 100 : 0;
@@ -106,7 +177,7 @@ const StudyScreen: React.FC = () => {
         return <Quiz 
           questions={currentStageData.questions} 
           onQuizComplete={handleQuizComplete} 
-          onWatchVideoAgain={() => setStudyStep('video')} 
+          onWatchVideoAgain={() => setStudyStep('video')}
         />;
       case 'reflection':
         return (
@@ -150,14 +221,14 @@ const StudyScreen: React.FC = () => {
                 {currentStageId > 1 && (
                     <button 
                         onClick={handleGoBack}
-                        className="absolute left-0 p-2 rounded-full hover:bg-gray-700 transition-colors"
+                        className="absolute left-0 p-2 rounded-full hover:bg-gray-700 transition-all duration-200 transform hover:scale-110"
                         aria-label="Voltar Etapa"
                     >
                         <i data-lucide="arrow-left" className="w-6 h-6"></i>
                     </button>
                 )}
                 <h1 className="text-2xl md:text-3xl font-bold px-10">
-                    Etapa {currentStageData.id}: {currentStageData.title}
+                    {currentStageData.title}
                 </h1>
             </div>
             <p className="text-gray-300 mt-2">{currentStageData.motivationalPhrase}</p>
