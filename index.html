@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Identidade em Cristo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- TAG DO CDN TAILWIND REMOVIDA AQUI. 
+         Agora, o CSS otimizado será carregado pela tag <link> abaixo. -->
+    
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
@@ -90,7 +93,11 @@
             left: 0;
         }
     </style>
-<link rel="stylesheet" href="/index.css">
+    <!-- CORREÇÃO DO ERRO 404: Adicionando uma referência genérica para favicon.ico. -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico"> 
+
+    <!-- Carrega o CSS otimizado que o Vite e o Tailwind gerarão a partir do seu index.css -->
+    <link rel="stylesheet" href="/index.css">
 </head>
 <body class="bg-gray-900">
     <div id="root"></div>

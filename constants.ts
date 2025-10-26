@@ -27,13 +27,17 @@ export const SOUNDS = {
   INTRO: { id: 'sound-intro', src: '/INTRO.wav' },
   PHOTO_UPLOAD: { id: 'sound-photo-upload', src: '/PHOTO_UPLOAD.wav' },
   DOWNLOAD: { id: 'sound-download', src: '/DOWNLOAD.wav' },
+  COPY_FAIL: { id: 'sound-copy-fail', src: '/COPY_FAIL.wav' },
+  TOGGLE: { id: 'sound-toggle', src: '/TOGGLE.wav' },
+  CONCLUSION: { id: 'sound-conclusion', src: '/CONCLUSION.wav' },
 
   // Arquivos .MP3
   COPY_SUCCESS: { id: 'sound-copy-success', src: '/COPY_SUCCESS.mp3' },
-  COPY_FAIL: { id: 'sound-copy-fail', src: '/COPY_FAIL.wav' },
-  TOGGLE: { id: 'sound-toggle', src: '/TOGGLE.mp3' },
-  CONCLUSION: { id: 'sound-conclusion', src: '/CONCLUSION.wav' },
+
 };
+
+// *** NOVO: USE O CAMINHO LOCAL PARA O PDF NA PASTA PUBLIC ***
+export const ESTUDO_PDF_URL = '/estudo.pdf';
 
 // MANTIDO: URLs locais que já funcionaram para BGM.
 export const QUIZ_BGM_URLS = [
