@@ -1,11 +1,13 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react'; // ADICIONE , useState AQUI
 import { useAppContext } from '../context/AppContext';
 import { Screen } from '../types';
 import ActionButton from '../components/ActionButton';
 import AnimatedScreen from '../components/AnimatedScreen';
 import { useSound } from '../hooks/useSound';
 // *** IMPORTANDO O LINK DE constants.ts ***
-import { SOUNDS, ESTUDO_PDF_URL } from '../constants'; 
+import { SOUNDS, ESTUDO_PDF_URL } from '../constants';
+import NovaIdentidade from '../components/NovaIdentidade'; // <-- ADICIONE ESTA LINHA
+
 
 const RewardsScreen: React.FC = () => {
   const { userName, navigateTo, photo, setPhoto, birthDate, setBirthDate } = useAppContext();
@@ -13,6 +15,7 @@ const RewardsScreen: React.FC = () => {
   const idCardRef = useRef<HTMLDivElement>(null);
   const letterRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [sexo, setSexo] = useState('Masculino'); // <-- ADICIONE ESTA LINHA
 
   // Ajuste para usar o SOUNDS importado, garantindo a correção do path
   const playPhotoUploadSound = useSound(SOUNDS.PHOTO_UPLOAD.src, 0.5); 
@@ -50,7 +53,18 @@ const RewardsScreen: React.FC = () => {
       });
     }
   };
-  
+
+  const handleGeneratePdfCarta = () => {
+  // 1. Salva o nome no localStorage para o template ler
+  localStorage.setItem('cartaUserName', userName);
+
+  // 2. Abre o template em uma nova aba
+  window.open('/carta_template.html', '_blank');
+
+  // 3. Toca o som de download (opcional, mas bom manter)
+  playDownloadSound();
+};
+
   const formattedDate = birthDate 
     ? new Date(birthDate + 'T00:00:00').toLocaleDateString('pt-BR') 
     : 'DD/MM/AAAA';
@@ -65,37 +79,38 @@ const RewardsScreen: React.FC = () => {
           {/* ID Card Section */}
           <div className="bg-gray-800 p-6 rounded-2xl shadow-lg transition-transform duration-300 hover:scale-[1.02] hover:shadow-2xl">
             <h2 className="text-2xl font-bold mb-4 text-blue-400">Carteira de Identidade Espiritual</h2>
-            <div ref={idCardRef} className="p-4 bg-gray-900 text-left rounded-lg mb-4">
-              <div className="bg-gradient-to-r from-blue-700 to-cyan-600 p-2 rounded-t-lg text-center font-bold">
-                REINO DE DEUS - CIDADANIA CELESTIAL
-              </div>
-              <div className="flex gap-4 p-4 bg-gray-800">
-                <div className="w-28 h-36 bg-gray-600 flex items-center justify-center text-xs text-gray-400 overflow-hidden flex-shrink-0">
-                  {photo ? <img src={photo} alt="User" className="w-full h-full object-cover" /> : 'FOTO 3X4'}
-                </div>
-                <div className="text-sm space-y-1 flex-1">
-                  <div><span className="font-semibold text-gray-400">NOME:</span><br/> <span className="font-mono">{userName}</span></div>
-                  <div><span className="font-semibold text-gray-400">FILIAÇÃO:</span><br/> <span className="font-mono">DEUS PAI</span></div>
-                  <div><span className="font-semibold text-gray-400">DATA DE NASCIMENTO (NOVO):</span><br/> <span className="font-mono">{formattedDate}</span></div>
-                </div>
-              </div>
-              <div className="bg-gray-900 p-2 rounded-b-lg">
-                <p className="text-center font-bold text-lg text-cyan-400">NOVA CRIAÇÃO</p>
-                <p className="text-xs text-center text-gray-400">"Se alguém está em Cristo, é nova criação." (2 Co 5:17)</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-4">
+            <div className="flex justify-center my-4"> {/* Wrapper para centralizar */}
+            <NovaIdentidade 
+                ref={idCardRef}
+                userName={userName}
+                photo={photo}
+                birthDate={birthDate}
+                sexo={sexo}
+            />
+            </div>
+            <div className="flex flex-col gap-4">
                <input 
-                type="file" 
-                accept="image/*" 
-                ref={fileInputRef} 
-                onChange={handlePhotoUpload} 
-                className="hidden" 
-              />
-              <button onClick={() => fileInputRef.current?.click()} className="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded-lg font-bold transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2">
+                type="file" 
+                accept="image/*" 
+                ref={fileInputRef} 
+                onChange={handlePhotoUpload} 
+                className="hidden" 
+            />
+              <button onClick={() => fileInputRef.current?.click()} className="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded-lg font-bold ...">
                  <i data-lucide="upload"></i> {photo ? 'Alterar Foto' : 'Carregar Foto 3x4'}
               </button>
-              <input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className="bg-gray-700 p-2 rounded-lg w-full text-center" />
+
+              {/* ADICIONE ESTE BLOCO <select> ABAIXO */}
+              <select 
+                value={sexo} 
+                onChange={(e) => setSexo(e.target.value)} 
+                className="bg-gray-700 p-3 rounded-lg w-full text-center"
+              >
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+              </select>
+              
+              <input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className="bg-gray-700 p-3 rounded-lg w-full text-center" />
             </div>
             <button onClick={() => handleDownloadImage(idCardRef, 'identidade_espiritual')} className="mt-4 w-full bg-cyan-600 hover:bg-cyan-700 p-3 rounded-lg font-bold transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2">
               <i data-lucide="download"></i> Baixar Identidade
@@ -112,7 +127,7 @@ const RewardsScreen: React.FC = () => {
               <p className="font-bold">Esta alforria é irrevogável, selada pelo Espírito Santo, e garante todos os direitos de filho(a) amado(a) e herdeiro(a) do Reino de Deus.</p>
               <p className="text-right mt-6 font-bold text-cyan-300">- Assinado: O Rei dos Reis</p>
             </div>
-            <button onClick={() => handleDownloadImage(letterRef, 'carta_de_alforria')} className="w-full bg-cyan-600 hover:bg-cyan-700 p-3 rounded-lg font-bold transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2">
+            <button onClick={handleGeneratePdfCarta} className="...">
                <i data-lucide="download"></i> Baixar Carta
             </button>
           </div>
