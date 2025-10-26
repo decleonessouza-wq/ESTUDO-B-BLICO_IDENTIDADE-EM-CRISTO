@@ -1,0 +1,267 @@
+/* Conteúdo para: src/components/NovaIdentidade.css */
+
+:root {
+  --doc-width: 102mm;
+  --doc-total-height: 135.8mm;
+  --doc-half-height: 67.9mm;
+}
+
+/* Precisamos dar um 'font-family' base, já que ele não herda do 'body' */
+.documento {
+  font-family: Arial, sans-serif;
+  /* Garante que o fundo não seja transparente no download */
+  background-color: white; 
+}
+
+/* Estilos da Carteira (card) */
+.documento {
+  width: var(--doc-width);
+  height: var(--doc-total-height);
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  position: relative;
+  /* AJUSTE: Caminho para a imagem na sua pasta public/images */
+  background: url('/images/fundo-identidade.png') no-repeat center/cover;
+}
+
+.frente,
+.verso {
+  width: 100%;
+  height: var(--doc-half-height);
+  position: absolute;
+  left: 0;
+}
+
+.frente {
+  top: 0;
+  padding: 3mm;
+  border-bottom: 1px dashed #aaa;
+}
+
+/* Este é o seletor CORRIGIDO para o LOGO DA IGREJA (Direita) */
+.frente .logo-governo {
+  position: absolute; 
+  top: 1mm; /* Ajustado para alinhar com o brasão */
+  right: 2mm;
+  width: 18mm; /* Ajustado para alinhar com o brasão */
+  height: 18mm; /* Ajustado para alinhar com o brasão */
+  background: url('/images/IGREJA-LOGO.png') no-repeat center/contain;
+}
+
+/* --- FIM DA SUBSTITUIÇÃO --- */
+
+.frente header {
+  text-align: center;
+  line-height: 1.2;
+  color: #006400;
+}
+.frente header h1 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 4.5mm;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.frente .subtitulo-governo {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2.4mm;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.frente .subtitulo-secretaria {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2.2mm;
+  color: black;
+  margin-top: 3mm;
+  line-height: 0.8;
+}
+.frente header h2 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 4mm;
+  font-weight: bold;
+  color: #222;
+  margin-top: 2mm;
+}
+.frente header h3 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2.2mm;
+  color: #006400;
+  margin-top: 1mm;
+}
+
+.frente .foto {
+  position: absolute;
+  top: 26mm;
+  left: 4mm;
+  width: 24mm;
+  height: 32mm;
+  border-radius: 3mm;
+  background-color: #fff;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.frente .conteudo {
+  position: absolute;
+  top: 30mm;
+  left: 33mm;
+  right: 3mm;
+
+  
+}
+.frente .linha {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.2mm;
+ 
+}
+.frente .campo {
+  width: 50%;
+  text-align: left;
+}
+.frente .campo .label {
+  font-size: 2mm;
+  font-weight: bold;
+  color: #006400;
+  line-height: 1.1;
+}
+.frente .campo .valor {
+  font-size: 2.2mm;
+  white-space: nowrap;
+  font-weight: bold;
+  color: #0f0f0f;
+}
+.frente .assinatura {
+  position: absolute;
+  bottom: 1mm;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  width: 45mm;
+}
+.frente .assinatura-linha {
+  border-top: 1px solid #000;
+  margin-bottom: 0.5mm;
+}
+.frente .assinatura-label {
+  font-size: 2.2mm;
+  color: #444;
+}
+
+.verso {
+  top: var(--doc-half-height);
+  padding: 3mm;
+  position: relative;
+}
+
+.verso .conteudo-superior-verso {
+  display: flex;
+  align-items: flex-start;
+  gap: 2mm;
+  position: relative;
+  top: 3mm;
+  left: -7mm;
+}
+.verso .mapa-fundo {
+  width: 34mm;
+  height: 23mm;
+  position: relative;
+  top: 0mm;
+  left: 2.7mm;
+  /* AJUSTE: Caminho para a imagem na sua pasta public/images */
+  background: url('/images/ESTUDO-corte.png') no-repeat center center;
+  background-size: contain;
+  opacity: 0.9;
+}
+.verso .dados-expedicao {
+  text-align: left;
+}
+.verso .campo-exp {
+  margin-bottom: 1.1mm;
+}
+.verso .campo-exp .label {
+  font-weight: bold;
+  font-size: 2.4mm;
+  color: #000000
+}
+.verso .campo-exp .valor {
+  font-size: 2.4mm;
+  color: #006400;
+  font-weight: bold;
+}
+
+.verso .assinatura-divina {
+  margin-top: 4mm;
+  text-align: center;
+  color: #006400;
+}
+.verso .assinatura-divina-img {
+  font-family: 'Brush Script MT', cursive;
+  font-size: 6mm;
+  color: black;
+}
+.verso .assinatura-divina-label {
+  font-size: 2.2mm;
+  border-top: 1px solid #006400;
+  width: 40mm;
+  display: block;
+  margin: -2mm auto 0;
+}
+
+.verso .validade-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5mm;
+  margin-top: 4mm;
+}
+.verso .espaco-figura {
+  width: 10mm;
+  height: 10mm;
+  border: 1px solid #ccc;
+}
+.verso .validade {
+  font-size: 1.6mm;
+  text-align: center;
+  margin-top: -12mm;
+  color: #006400;
+}
+
+.verso .versiculo {
+  font-style: italic;
+  font-size: 2.5mm;
+  color: #333;
+  margin-bottom: -20mm;
+}
+
+.verso .rodape-verso {
+  position: absolute;
+  bottom: 3mm;
+  left: 3mm;
+  right: 3mm;
+  text-align: center;
+}
+.verso .rodape-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.verso .rodape-texto-esquerda,
+.verso .rodape-texto-direita {
+  font-size: 2mm;
+  font-weight: bold;
+  width: 42%;
+  margin-bottom: -8mm;
+}
+.verso .logo-rodape {
+  width: 30%;
+  height: 12mm;
+  /* AJUSTE: Caminho para a imagem na sua pasta public/images */
+  background: url('/images/IGREJA-LOGO.png') no-repeat center/contain;
+  margin-bottom: 6mm;
+}
+
+/* AJUSTE: Caminhos para as imagens na sua pasta public/images */
+#figura1 { background: url('/images/JESUS-3.png') no-repeat center/contain; }
+#figura2 { background: url('/images/JESUS-2.png') no-repeat center/contain; }
+#figura3 { background: url('/images/JESUS.png') no-repeat center/contain; }
+#figura4 { background: url('/images/JESUS-4.png') no-repeat center/contain; }

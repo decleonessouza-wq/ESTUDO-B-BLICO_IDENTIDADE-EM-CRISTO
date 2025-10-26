@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Oswald:wght@400;500;700&family=Pinyon+Script&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap" rel="stylesheet">
+    <title>Gerador de Carta de Alforria Espiritual</title>
+    <style>
+        :root {
+            --doc-width: 102mm;
+            --doc-total-height: 135.8mm;
+            --main-green: #006400;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #eaeaea;
+            padding: 20px 0;
+        }
+
+        #form-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            width: var(--doc-width);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .input-group label {
+            font-weight: bold;
+            color: var(--main-green);
+            font-size: 14px;
+        }
+        .input-group input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #btn-gerar {
+            background: var(--main-green);
+            color: #fff;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        #btn-gerar:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Estilos da Carta (documento) */
+        .documento {
+            width: 297mm; /* A4 width in landscape */
+            height: 210mm; /* A4 height in landscape */
+            padding: 25mm;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            position: relative;
+            background: transparent;
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .documento h1, .documento h2, .documento p, .documento li {
+            font-family: 'Montserrat', sans-serif;
+            color: white;
+        }
+        .documento .destaque {
+             color: #f8e688; 
+        }
+
+        .documento .titulo-carta {
+            font-family: 'Pinyon Script', cursive;
+            font-size: 70px;
+            font-weight: 400;
+            color: #f8e688;
+            text-align: center;
+            width: 85%;
+            position: absolute;
+            top: 330px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap; /* Impede a quebra de linha */
+            overflow: hidden; /* Oculta o texto que transborda */
+        }
+
+        /* Estilo para dividir o conteúdo em duas colunas */
+        .content-wrapper {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 350px;
+        }
+        .content-col {
+            flex: 1;
+            padding: 0 10mm;
+            text-align: center; 
+        }
+
+        .secao {
+            margin-bottom: 20px;
+        }
+        
+        .secao p, .secao li {
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .secao li {
+            list-style-type: none;
+            margin-left: 15px;
+            padding-left: 10px;
+            position: relative;
+        }
+
+        .secao li:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            color: gold;
+        }
+
+        .assinatura-bloco {
+            margin-top: 30px;
+            text-align: right;
+            width: 100%;
+        }
+
+        .toolbar {
+            margin-top: 20px;
+            display: none;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        button {
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            background: var(--main-green);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        /* Estilos para impressão (orientação horizontal A4) */
+        @media print {
+            body {
+                background-color: transparent !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                justify-content: flex-start;
+                align-items: flex-start;
+                min-height: auto;
+                padding: 0;
+            }
+            #form-container, .toolbar {
+                display: none !important;
+            }
+            .documento {
+                display: flex !important;
+                position: relative;
+                width: 297mm;
+                height: 210mm;
+                margin: 0;
+                padding: 20mm;
+                border: none;
+                box-shadow: none;
+                flex-direction: column;
+            }
+            .documento h1, .documento h2, .documento p, .documento li {
+                color: #fff; /* Mantém a cor original */
+            }
+            .documento .destaque {
+                color: gold; /* Mantém a cor original */
+            }
+        }
+
+        /* Estilo para a imagem de fundo */
+        .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://i.postimg.cc/XNzsbwzg/CARTA-OFICIAL.png');
+            background-size: 100% 100%;
+            background-position: center;
+            z-index: -1;
+        }
+
+        /* COLE ESTE BLOCO NO FINAL DA SUA TAG <style> */
+
+        /* Estilos Específicos da Carta de Alforria */
+        .alforria-documento {
+            width: 297mm; /* A4 paisagem */
+            height: 210mm; /* A4 paisagem */
+            padding: 25mm;
+            position: relative;
+            display: none; /* Começa escondido */
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            background: transparent;
+            margin: 40px auto;
+        }
+
+        .alforria-documento h1, .alforria-documento h2, .alforria-documento p, .alforria-documento li {
+            font-family: 'Montserrat', sans-serif;
+            color: white;
+        }
+        .alforria-documento .destaque {
+            color: #f8e688; 
+        }
+        .alforria-documento .titulo-carta {
+            font-family: 'Pinyon Script', cursive;
+            font-size: 70px;
+            font-weight: 400;
+            color: #f8e688;
+            text-align: center;
+            width: 85%;
+            position: absolute;
+            top: 330px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .alforria-documento .content-wrapper {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 350px;
+        }
+        .alforria-documento .content-col {
+            flex: 1;
+            padding: 0 10mm;
+            text-align: center; 
+        }
+        .alforria-documento .secao {
+            margin-bottom: 20px;
+        }
+        .alforria-documento .secao p, .alforria-documento .secao li {
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .alforria-documento .secao li {
+            list-style-type: none;
+            margin-left: 15px;
+            padding-left: 10px;
+            position: relative;
+        }
+        .alforria-documento .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://i.postimg.cc/XNzsbwzg/CARTA-OFICIAL.png');
+            background-size: 100% 100%;
+            background-position: center;
+            z-index: -1;
+        }
+
+    </style>
+</head>
+<body>
+    <div>
+        <div id="form-container">
+            <div class="input-group">
+                <label for="nome">Nome Completo:</label>
+                <input type="text" id="nome" placeholder="Seu Nome Completo">
+            </div>
+            <button id="btn-gerar">Gerar Carta de Alforria</button>
+        </div>
+
+        <main class="documento" id="card">
+            <div class="background-image"></div>
+            
+            <p class="titulo-carta" id="nome-valor"></p>
+
+            <div class="content-wrapper">
+                <div class="content-col">
+                    <div class="secao">
+                        <ul>
+                            <li>NÃO SOU MAIS ESCRAVO do que outros pensam de mim</li>
+                            <li>NÃO SOU MAIS ESCRAVO da necessidade de aprovação</li>
+                            <li>NÃO SOU MAIS ESCRAVO do medo da rejeição</li>
+                            <li>NÃO SOU MAIS ESCRAVO da comparação com outros</li>
+                            <li>EU SOU LIVRE porque sou filho de Deus</li>
+                            <li>EU SOU LIVRE porque Cristo me libertou</li>
+                            <li>EU SOU LIVRE para ser quem Deus criou</li>
+                            <li>EU SOU LIVRE para cumprir meu propósito</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-col">
+                    <div class="secao">
+                        <p>Não sou o que faço, não sou o que tenho, não sou o que outros pensam de mim.</p>
+                        <p class="destaque">Eu Sou Quem Deus diz que Eu Sou: SEU FILHO AMADO!</p>
+                        <p>Por isso, de pé, ergo a cabeça, olho nos olhos do mundo e declaro:</p>
+                        <p class="destaque" style="font-size: 20px;">EU SOU FILHO DO REI DOS REIS!</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div class="toolbar" id="toolbar">
+            <button id="btn-print">Imprimir / Salvar PDF</button>
+        </div>
+    </div>
+
+<script>
+    // Função para ajustar o tamanho da fonte (do seu arquivo original)
+    function ajustarFonteNome(nome) {
+        const nomeValor = document.getElementById('nome-valor');
+        nomeValor.textContent = nome;
+
+        const containerWidth = nomeValor.offsetWidth;
+        let textWidth = nomeValor.scrollWidth;
+
+        let currentFontSize = 70;
+        const minFontSize = 10;
+        const adjustmentStep = 0.5;
+
+        while (textWidth > containerWidth && currentFontSize > minFontSize) {
+            currentFontSize -= adjustmentStep;
+            nomeValor.style.fontSize = `${currentFontSize}px`;
+            textWidth = nomeValor.scrollWidth;
+        }
+    }
+
+    // Função que roda quando a página carrega
+    document.addEventListener('DOMContentLoaded', () => {
+        const cardContainer = document.getElementById('card');
+
+        // 1. Pega o nome do usuário que o app React salvou
+        const userName = localStorage.getItem('cartaUserName');
+
+        if (!userName) {
+            document.body.innerHTML = '<h1>Erro: Nome de usuário não encontrado. Volte e tente novamente.</h1>';
+            return;
+        }
+
+        // 2. Mostra o documento e esconde o formulário
+        const formContainer = document.getElementById('form-container');
+        if (formContainer) {
+          formContainer.style.display = 'none';
+        }
+        cardContainer.style.display = 'flex'; // 'flex' é como está no seu original
+
+        // 3. Coloca o nome no template e ajusta a fonte
+        setTimeout(() => {
+          ajustarFonteNome(userName);
+        }, 10);
+
+        // 4. Abre a janela de impressão/salvar PDF
+        // Usamos um timeout para dar tempo da imagem de fundo carregar
+        setTimeout(() => {
+            window.print();
+        }, 500); // 0.5 segundos de espera
+    });
+</script>
+</body>
+</html>
