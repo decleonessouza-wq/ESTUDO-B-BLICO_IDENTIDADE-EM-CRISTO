@@ -1,15 +1,17 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { QuizQuestion } from '../../types';
+// IMPORTADO ThemeProps
+import { QuizQuestion, ThemeProps } from '../../types'; 
 import ActionButton from '../../components/ActionButton';
 import { useSound } from '../../hooks/useSound';
 import confetti from 'canvas-confetti';
 import { SOUNDS } from '../../constants';
 
+// ATUALIZADO: Adicionado prop theme
 interface QuizProps {
   questions: QuizQuestion[];
   onQuizComplete: (score: number) => void;
   onWatchVideoAgain: () => void;
+  theme: ThemeProps; // <--- ADICIONADO
 }
 
 interface ShuffledOption {
@@ -17,7 +19,8 @@ interface ShuffledOption {
   originalIndex: number;
 }
 
-const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgain }) => {
+// ADICIONADO: Recebendo prop theme
+const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgain, theme }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswerOriginalIndex, setSelectedAnswerOriginalIndex] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -38,6 +41,7 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgai
       text: opt,
       originalIndex: index,
     }));
+    // MANTIDO: Lógica original de shuffle
     setShuffledOptions(optionsWithOriginalIndex.sort(() => Math.random() - 0.5));
   }, [currentQuestion]);
 
@@ -54,6 +58,7 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgai
     return () => clearTimeout(timerId);
   }, [showFeedback]);
 
+  // Efeito de Confetti, restaurado conforme original
   useEffect(() => {
     if (isCorrect && showFeedback) {
       const duration = 2 * 1000;
@@ -79,17 +84,20 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgai
   }, [isCorrect, showFeedback]);
 
   const handleAnswerSelect = (originalIndex: number) => {
+    // MANTIDO: Lógica original de seleção
     if (!showFeedback && !incorrectlySelected.has(originalIndex)) {
       playToggleSound();
       setSelectedAnswerOriginalIndex(originalIndex);
     }
   };
 
+  // RESTAURADO: Lógica de pontuação e tentativas original
   const handleSubmit = () => {
     if (selectedAnswerOriginalIndex === null) return;
-
-    const correct = selectedAnswerOriginalIndex === currentQuestion.correctAnswerIndex;
     
+    playToggleSound();
+    
+    const correct = selectedAnswerOriginalIndex === currentQuestion.correctAnswerIndex;
     if (correct) {
       const points = { 1: 100, 2: 75, 3: 50, 4: 25 }[attempts] || 25;
       setScore(prev => prev + points);
@@ -101,20 +109,22 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgai
       setAttempts(prev => prev + 1);
       setSelectedAnswerOriginalIndex(null);
       playIncorrectSound();
-      shuffleOptions();
-      if (attempts >= 4) {
-          setIsCorrect(false);
-          setShowFeedback(true);
+      shuffleOptions(); // Originalmente chama shuffleOptions na falha
+      
+      if (attempts >= 4) { // 4 tentativas no total
+        setIsCorrect(false);
+        setShowFeedback(true);
       }
     }
   };
+  // ------------------------------------
 
   const handleNext = () => {
+    playToggleSound();
     if (currentQuestionIndex >= questions.length - 1) {
       onQuizComplete(score);
       return;
     }
-
     setShowFeedback(false);
     setSelectedAnswerOriginalIndex(null);
     setIsCorrect(null);
@@ -122,36 +132,37 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgai
     setIncorrectlySelected(new Set());
     setCurrentQuestionIndex(prev => prev + 1);
   };
-
+  
   const getButtonClass = (originalIndex: number) => {
     if (showFeedback) {
-        if (originalIndex === currentQuestion.correctAnswerIndex) {
-            return 'bg-green-600 ring-4 ring-green-400';
-        }
-        if (incorrectlySelected.has(originalIndex)) {
-            return 'bg-red-600 opacity-50';
-        }
-        return 'bg-gray-700 opacity-50';
+      if (originalIndex === currentQuestion.correctAnswerIndex) {
+        return 'bg-green-600 ring-4 ring-green-400';
+      }
+      return 'bg-gray-700 opacity-50';
     }
 
     if (incorrectlySelected.has(originalIndex)) {
-        return 'bg-red-700 opacity-60 cursor-not-allowed';
+      return 'bg-red-700 opacity-60 cursor-not-allowed';
     }
     
+    // APLICAÇÃO DO TEMA
     return selectedAnswerOriginalIndex === originalIndex 
-      ? 'bg-blue-600 ring-4 ring-blue-400' 
-      : 'bg-gray-700 hover:bg-blue-800';
+      ? `${theme.accentBg} ring-4 ring-blue-400` 
+      : 'bg-gray-700 hover:bg-gray-600'; 
   };
-
+  
   return (
-    <div className="w-full max-w-3xl p-6 bg-gray-800 bg-opacity-70 backdrop-blur-sm rounded-2xl shadow-2xl border border-blue-700 text-white text-center">
+    // APLICAÇÃO DO TEMA NA BORDA
+    <div className={`w-full max-w-3xl p-6 bg-gray-800 bg-opacity-70 backdrop-blur-sm rounded-2xl shadow-2xl border ${theme.cardBorder} text-white text-center`}>
       <div className="mb-4">
         <div className="flex justify-between items-center">
-          <p className="text-blue-400 font-bold">Pergunta {currentQuestionIndex + 1} de {questions.length}</p>
+          {/* APLICAÇÃO DO TEMA NO TEXTO */}
+          <p className={`${theme.accentText} font-bold`}>Pergunta {currentQuestionIndex + 1} de {questions.length}</p>
           <p className="text-white font-bold">Pontos: {score}</p>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-2.5 mt-2">
-          <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}></div>
+          {/* APLICAÇÃO DO TEMA NA BARRA DE PROGRESSO */}
+          <div className={`${theme.accentBg} h-2.5 rounded-full`} style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}></div>
         </div>
         <div className="text-right mt-2">
             <button
@@ -180,6 +191,7 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgai
         ))}
       </div>
 
+      {/* RESTAURADO: Botão de Confirmar (sem contagem de tentativas no texto) */}
       {!showFeedback ? (
         <ActionButton onClick={handleSubmit} disabled={selectedAnswerOriginalIndex === null}>
           Confirmar Resposta
@@ -200,7 +212,7 @@ const Quiz: React.FC<QuizProps> = ({ questions, onQuizComplete, onWatchVideoAgai
                     <i data-lucide="x-circle" className="inline-block mr-2 w-6 h-6"></i>
                     Todas as tentativas esgotadas.
                 </h3>
-                <p className="text-gray-300">A resposta correta era: <span className="font-bold">{currentQuestion.options[currentQuestion.correctAnswerIndex]}</span></p>
+                {/* REMOVIDO A LINHA QUE MOSTRA A RESPOSTA CORRETA, conforme sua solicitação. */}
             </div>
           )}
           <ActionButton onClick={handleNext} className="mt-4">

@@ -1,21 +1,30 @@
 import React, { useState } from 'react';
 import ActionButton from '../../components/ActionButton';
+// IMPORTADO ThemeProps
+import { ThemeProps } from '../../types'; 
 
+// ATUALIZADO: Adicionado prop theme
 interface ReflectionProps {
   biblicalReflection: string;
   motivationalPhrase: string;
   onReflectionComplete: (reflectionText: string) => void;
+  theme: ThemeProps; // <--- ADICIONADO
 }
 
-const Reflection: React.FC<ReflectionProps> = ({ biblicalReflection, motivationalPhrase, onReflectionComplete }) => {
+// ADICIONADO: Recebendo prop theme
+const Reflection: React.FC<ReflectionProps> = ({ biblicalReflection, motivationalPhrase, onReflectionComplete, theme }) => {
   const [text, setText] = useState('');
 
   return (
-    <div className="w-full max-w-3xl p-6 bg-gray-800 bg-opacity-70 backdrop-blur-sm rounded-2xl shadow-2xl border border-blue-700 text-white text-center">
-      <h2 className="text-2xl font-bold mb-4 text-blue-400">Momento de Reflexão</h2>
+    // APLICAÇÃO DO TEMA NA BORDA, RESTAURANDO O LAYOUT ORIGINAL
+    <div className={`w-full max-w-3xl p-6 bg-gray-800 bg-opacity-70 backdrop-blur-sm rounded-2xl shadow-2xl border ${theme.cardBorder} text-white text-center`}>
+      
+      {/* APLICAÇÃO DO TEMA NO TEXTO */}
+      <h2 className={`text-2xl font-bold mb-4 ${theme.accentText}`}>Momento de Reflexão</h2>
       
       <div className="bg-gray-900 p-4 rounded-lg mb-6">
-        <i data-lucide="book-marked" className="w-8 h-8 mx-auto mb-2 text-cyan-400"></i>
+        {/* APLICAÇÃO DO TEMA NO ÍCONE */}
+        <i data-lucide="book-marked" className={`w-8 h-8 mx-auto mb-2 ${theme.accentIcon}`}></i>
         <p className="text-lg italic text-gray-300">"{biblicalReflection}"</p>
       </div>
 
@@ -28,7 +37,8 @@ const Reflection: React.FC<ReflectionProps> = ({ biblicalReflection, motivationa
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Escreva aqui..."
-        className="w-full h-40 p-4 bg-gray-700 bg-opacity-50 border-2 border-blue-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:border-transparent transition duration-300 mb-6"
+        // APLICAÇÃO DO TEMA NO FOCO/BORDA, MANTENDO O FOCO AZUL PADRÃO
+        className={`w-full h-40 p-4 bg-gray-700 bg-opacity-50 border-2 border-transparent rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:border-transparent transition duration-300 mb-6`}
       />
 
       <ActionButton onClick={() => onReflectionComplete(text)} disabled={!text.trim()}>
