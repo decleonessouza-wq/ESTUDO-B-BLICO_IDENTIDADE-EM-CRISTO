@@ -28,6 +28,16 @@ export interface StageData {
   questions: QuizQuestion[];
 }
 
+// --- NOVO: Interface para Cores Dinâmicas (ThemeProps) ---
+export interface ThemeProps {
+  cardBorder: string; 
+  accentText: string;
+  accentBg: string;
+  accentIcon: string;
+  progressFrom: string; // Para o gradiente em StudyScreen
+  progressTo: string; // Para o gradiente em StudyScreen
+}
+
 export interface Comment {
   id: number;
   author: string;
