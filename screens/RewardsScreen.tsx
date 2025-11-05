@@ -18,8 +18,8 @@ const RewardsScreen: React.FC = () => {
   const [sexo, setSexo] = useState('Masculino'); // <-- ADICIONE ESTA LINHA
 
   // Ajuste para usar o SOUNDS importado, garantindo a correção do path
-  const playPhotoUploadSound = useSound(SOUNDS.PHOTO_UPLOAD.src, 0.5); 
-  const playDownloadSound = useSound(SOUNDS.DOWNLOAD.src, 0.5); 
+  const playPhotoUploadSound = useSound(SOUNDS.PHOTO_UPLOAD.id, 0.5); 
+  const playDownloadSound = useSound(SOUNDS.DOWNLOAD.id, 0.5); 
 
   useEffect(() => {
     const timerId = setTimeout(() => {

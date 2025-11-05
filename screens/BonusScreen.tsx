@@ -111,7 +111,6 @@ const GAMES_CONFIG: Array<{
 ];
 
 const BonusScreen: React.FC<BonusScreenProps> = ({ initialView = 'gratitude' }) => {
-const BonusScreen: React.FC = () => {
   const {
     userName,
     navigateTo,
