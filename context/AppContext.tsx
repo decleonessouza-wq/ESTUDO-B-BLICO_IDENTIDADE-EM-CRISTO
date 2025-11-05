@@ -2,14 +2,15 @@
 import React, { createContext, useState, useContext, ReactNode, useMemo, useEffect, useCallback } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 // Fix: Import StageProgress from types.ts to make it available in this context
-import { Screen, StageData, Post, StageProgress, Comment } from '../types';
+import { Screen, StageData, Post, StageProgress, Comment, ParticipantSummary, StageSnapshot } from '../types';
 import { getStagesData } from '../constants';
 
 // 🚨 CORREÇÃO ESSENCIAL 1: Definição da URL da API (Backend na porta 4001)
-const API_URL = 'http://localhost:4001/api'; 
+const API_URL = 'http://localhost:4001/api';
 const LOCAL_STORAGE_KEY = 'identidadeCristoProgress';
 // 🚨 Novo local storage key para o token e userId, se aplicável
 const USER_STORAGE_KEY = 'identidadeCristoUser';
+const ADMIN_PARTICIPANTS_KEY = 'identidadeCristoParticipants';
 
 interface UserData {
     userId: string | null;
@@ -30,6 +31,8 @@ interface AppState {
     isAdmin: boolean;
     isLoaded: boolean;
     completedAt: string | null;
+    journeyStartAt: string | null;
+    totalTimeMinutes: number | null;
 }
 
 interface AppContextType extends AppState {
@@ -57,6 +60,10 @@ interface AppContextType extends AppState {
     register: (name: string, birthDate: string) => Promise<boolean>;
     loginAdmin: (user: string, pass: string) => Promise<boolean>;
     logout: () => void;
+    markJourneyStart: () => void;
+    markJourneyCompleted: () => void;
+    getAdminParticipants: () => ParticipantSummary[];
+    exitAdmin: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -89,7 +96,7 @@ const loadInitialState = (): AppState => {
     }
 
     return {
-        userName: progressData.userName || userData.isAdmin ? 'Admin' : '',
+        userName: progressData.userName || (userData.isAdmin ? 'Admin' : ''),
         birthDate: progressData.birthDate || null,
         photo: progressData.photo || null,
         stageProgress: progressData.stageProgress || {},
@@ -99,7 +106,9 @@ const loadInitialState = (): AppState => {
         token: userData.token,
         isAdmin: userData.isAdmin,
         isLoaded: true, // Começa como true, pois o estado inicial foi carregado
-        completedAt: null,
+        completedAt: progressData.completedAt || null,
+        journeyStartAt: progressData.journeyStartAt || null,
+        totalTimeMinutes: progressData.totalTimeMinutes ?? null,
     };
 };
 
@@ -125,6 +134,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const [isAdmin, setIsAdmin] = useState<boolean>(initialState.isAdmin);
     const [isLoaded, setIsLoaded] = useState<boolean>(initialState.isLoaded);
     const [completedAt, setCompletedAt] = useState<string | null>(initialState.completedAt);
+    const [journeyStartAt, setJourneyStartAt] = useState<string | null>(initialState.journeyStartAt || null);
+    const [totalTimeMinutes, setTotalTimeMinutes] = useState<number | null>(initialState.totalTimeMinutes ?? null);
 
 
     const stagesData = useMemo(() => getStagesData(), []);
@@ -132,10 +143,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Efeito para salvar o progresso da jornada
     useEffect(() => {
         const dataToSave: Partial<AppState> = {
-            userName, birthDate, photo, stageProgress, currentStageId, posts,
+            userName,
+            birthDate,
+            photo,
+            stageProgress,
+            currentStageId,
+            posts,
+            completedAt,
+            journeyStartAt,
+            totalTimeMinutes,
         };
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
-    }, [userName, birthDate, photo, stageProgress, currentStageId, posts]);
+    }, [userName, birthDate, photo, stageProgress, currentStageId, posts, completedAt, journeyStartAt, totalTimeMinutes]);
 
     // Efeito para salvar os dados de autenticação
     useEffect(() => {
@@ -208,24 +227,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }, []);
 
     const loginAdmin = async (user: string, pass: string): Promise<boolean> => {
-        // Lógica de login admin local (a que você já deve ter no WelcomeScreen)
-        if (user === 'Decleones Andrade de Souza' && pass === 'Em160813') {
+        if (user === 'Decleones Andrade de Souza' && pass === 'Emil1608*') {
             setUserName('Decleones Andrade de Souza');
-            setIsAdmin(true); 
-            setUserId(null); 
+            setIsAdmin(true);
+            setUserId('admin');
             setToken(null);
-            navigateTo(Screen.Welcome); // Você pode mudar isso para Screen.AdminDashboard depois
+            navigateTo(Screen.AdminDashboard);
             return true;
         }
         return false;
     };
-    
+
     const logout = () => {
         setUserId(null);
         setToken(null);
         setIsAdmin(false);
         localStorage.removeItem(USER_STORAGE_KEY);
-        // O restante do reset pode ser tratado pela função resetJourney
         resetJourney();
     };
 
@@ -291,7 +308,46 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setCurrentScreen(screen);
         window.scrollTo(0, 0);
     };
-    
+
+    const markJourneyStart = useCallback(() => {
+        setJourneyStartAt(prev => prev ?? new Date().toISOString());
+    }, []);
+
+    const markJourneyCompleted = useCallback(() => {
+        const completionTime = new Date().toISOString();
+        setCompletedAt(completionTime);
+        if (journeyStartAt) {
+            const diffMs = new Date(completionTime).getTime() - new Date(journeyStartAt).getTime();
+            const minutes = Math.max(1, Math.round(diffMs / 60000));
+            setTotalTimeMinutes(minutes);
+        } else {
+            setTotalTimeMinutes(null);
+        }
+    }, [journeyStartAt]);
+
+    const getAdminParticipants = useCallback((): ParticipantSummary[] => {
+        try {
+            const stored = localStorage.getItem(ADMIN_PARTICIPANTS_KEY);
+            if (!stored) {
+                return [];
+            }
+            const parsed = JSON.parse(stored) as ParticipantSummary[];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            console.error('Failed to load admin participants:', error);
+            return [];
+        }
+    }, []);
+
+    const exitAdmin = useCallback(() => {
+        setIsAdmin(false);
+        setUserName('');
+        setUserId(null);
+        setToken(null);
+        localStorage.removeItem(USER_STORAGE_KEY);
+        navigateTo(Screen.Welcome);
+    }, [navigateTo]);
+
     const updateStageProgress = (stageId: number, score: number, reflection: string) => {
         setStageProgress(prev => ({
             ...prev,
@@ -339,8 +395,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             author: userName,
             message,
         };
-        setPosts(prevPosts => 
-            prevPosts.map(post => 
+        setPosts(prevPosts =>
+            prevPosts.map(post =>
                 post.id === postId
                 ? { ...post, comments: [...post.comments, newComment] }
                 : post
@@ -356,9 +412,62 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setStageProgress({});
         setCurrentStageId(1);
         setPosts([]);
+        setJourneyStartAt(null);
+        setCompletedAt(null);
+        setTotalTimeMinutes(null);
         localStorage.removeItem(LOCAL_STORAGE_KEY);
         navigateTo(Screen.Welcome);
     };
+
+    useEffect(() => {
+        if (!userName || isAdmin) {
+            return;
+        }
+
+        const participantId = userId ?? `${userName.toLowerCase()}_${birthDate ?? 'desconhecido'}`;
+        const stages: StageSnapshot[] = stagesData.map(stage => {
+            const progress = stageProgress[stage.id] as StageProgress | undefined;
+            return {
+                id: stage.id,
+                title: stage.title,
+                score: progress?.score ?? 0,
+                reflection: progress?.reflection ?? '',
+                completed: Boolean(progress?.completed),
+            };
+        });
+
+        const completedStages = stages.filter(stage => stage.completed).length;
+        const snapshot: ParticipantSummary = {
+            id: participantId,
+            name: userName,
+            birthDate,
+            totalScore,
+            completedStages,
+            totalStages: stagesData.length,
+            stages,
+            posts: posts.filter(post => post.isUserPost),
+            startedAt: journeyStartAt,
+            completedAt,
+            totalTimeMinutes,
+            lastUpdated: new Date().toISOString(),
+        };
+
+        try {
+            const stored = localStorage.getItem(ADMIN_PARTICIPANTS_KEY);
+            const participants: ParticipantSummary[] = stored ? JSON.parse(stored) : [];
+            const existingIndex = participants.findIndex(item => item.id === snapshot.id);
+
+            if (existingIndex >= 0) {
+                participants[existingIndex] = { ...participants[existingIndex], ...snapshot };
+            } else {
+                participants.push(snapshot);
+            }
+
+            localStorage.setItem(ADMIN_PARTICIPANTS_KEY, JSON.stringify(participants));
+        } catch (error) {
+            console.error('Failed to persist participant snapshot:', error);
+        }
+    }, [userName, birthDate, posts, stageProgress, totalScore, isAdmin, userId, stagesData, journeyStartAt, completedAt, totalTimeMinutes]);
 
     const value = {
         currentScreen,
@@ -391,10 +500,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         isAdmin,
         isLoaded,
         completedAt,
+        journeyStartAt,
+        totalTimeMinutes,
         login,
         register,
         loginAdmin,
         logout,
+        markJourneyStart,
+        markJourneyCompleted,
+        getAdminParticipants,
+        exitAdmin,
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

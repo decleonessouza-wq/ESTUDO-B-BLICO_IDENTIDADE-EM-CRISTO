@@ -7,8 +7,12 @@ import { CHURCH_LOGO_URL, SOUNDS } from '../constants';
 import { useSound } from '../hooks/useSound';
 
 const WelcomeScreen: React.FC = () => {
-  const { setUserName, navigateTo } = useAppContext();
+  const { setUserName, navigateTo, loginAdmin, markJourneyStart } = useAppContext();
   const [name, setName] = useState('');
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [adminName, setAdminName] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminError, setAdminError] = useState('');
   const playIntroSound = useSound(SOUNDS.INTRO.id, 0.5);
 
   const handleStart = () => {
@@ -16,11 +20,38 @@ const WelcomeScreen: React.FC = () => {
     if (trimmedName) {
       setUserName(trimmedName);
       playIntroSound();
+      markJourneyStart();
       navigateTo(Screen.Instructions);
     }
   };
-  
+
   const canStart = name.trim() !== '';
+
+  const toggleAdminLogin = () => {
+    setShowAdminLogin(prev => !prev);
+    setAdminError('');
+  };
+
+  const handleAdminAccess = async () => {
+    const trimmedAdminName = adminName.trim();
+    const trimmedPassword = adminPassword.trim();
+
+    if (!trimmedAdminName || !trimmedPassword) {
+      setAdminError('Informe o nome e a senha de administrador.');
+      return;
+    }
+
+    const success = await loginAdmin(trimmedAdminName, trimmedPassword);
+    if (!success) {
+      setAdminError('Credenciais inválidas. Tente novamente.');
+      return;
+    }
+
+    setAdminError('');
+    setAdminName('');
+    setAdminPassword('');
+    setShowAdminLogin(false);
+  };
 
   return (
     <AnimatedScreen>
@@ -63,6 +94,54 @@ const WelcomeScreen: React.FC = () => {
           <ActionButton onClick={handleStart} disabled={!canStart}>
             Iniciar Jornada
           </ActionButton>
+
+          <button
+            onClick={toggleAdminLogin}
+            className="mt-4 w-full text-sm text-blue-300 hover:text-blue-100 transition-colors"
+            type="button"
+          >
+            {showAdminLogin ? 'Fechar acesso administrativo' : 'Acesso Administrativo'}
+          </button>
+
+          {showAdminLogin && (
+            <div className="mt-4 bg-gray-900 bg-opacity-70 border border-blue-700 rounded-xl p-4 text-left space-y-3">
+              <div>
+                <label htmlFor="admin-name" className="block text-xs uppercase tracking-wider text-gray-400 mb-1">
+                  Nome do Administrador
+                </label>
+                <input
+                  id="admin-name"
+                  type="text"
+                  value={adminName}
+                  onChange={(e) => setAdminName(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Digite o nome completo"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="admin-password" className="block text-xs uppercase tracking-wider text-gray-400 mb-1">
+                  Senha de Acesso
+                </label>
+                <input
+                  id="admin-password"
+                  type="password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Digite a senha"
+                />
+              </div>
+
+              {adminError && (
+                <p className="text-xs text-red-400">{adminError}</p>
+              )}
+
+              <ActionButton onClick={handleAdminAccess} className="w-full bg-gradient-to-r from-purple-600 to-indigo-500">
+                Entrar como Administrador
+              </ActionButton>
+            </div>
+          )}
         </div>
       </div>
     </AnimatedScreen>
