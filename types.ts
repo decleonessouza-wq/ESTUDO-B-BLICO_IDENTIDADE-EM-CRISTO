@@ -7,11 +7,36 @@ export enum Screen {
   Declaration,
   Congratulations,
   Rewards,
+  Bonus,
+  /**
+   * Legacy aliases kept for compatibility with earlier branches that
+   * referenced dedicated bonus screen routes. All map to the main bonus hub.
+   */
+  BonusGame = Bonus,
+  BonusReward = Bonus,
+  /**
+   * Standalone entry so the comprehensive word search keeps its own route
+   * while reusing the shared bonus hub infrastructure.
+   */
+  BonusWordSearch,
   Final,
   CommunityWall,
   ShareReport,
   AdminDashboard,
 }
+
+export interface Avatar {
+  icon: string;
+  color: string;
+}
+
+export type BonusGameId =
+  | 'identityBuilder'
+  | 'wordSearch'
+  | 'completeWordSearch'
+  | 'memory'
+  | 'victoryLeap'
+  | 'mindBattle';
 
 export interface QuizQuestion {
   question: string;
@@ -53,6 +78,7 @@ export interface Post {
   isLiked: boolean;
   isUserPost: boolean;
   comments: Comment[];
+  avatar?: Avatar | null;
 }
 
 export interface StageProgress {

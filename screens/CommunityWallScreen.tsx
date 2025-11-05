@@ -6,14 +6,16 @@ import ActionButton from '../components/ActionButton';
 import AnimatedScreen from '../components/AnimatedScreen';
 import { useSound } from '../hooks/useSound';
 import { SOUNDS } from '../constants';
+import AvatarPickerModal from '../components/AvatarPickerModal';
 
 const CommunityWallScreen: React.FC = () => {
-  const { userName, posts, addPost, toggleLike, navigateTo, addComment, loadingPosts } = useAppContext();
+  const { userName, posts, addPost, toggleLike, navigateTo, addComment, loadingPosts, avatar } = useAppContext();
   const [newPost, setNewPost] = useState('');
   const [filter, setFilter] = useState<'all' | 'mine'>('all');
   const [sortBy, setSortBy] = useState<'recent' | 'popular'>('recent');
   const [expandedPostId, setExpandedPostId] = useState<number | null>(null);
   const [commentInput, setCommentInput] = useState('');
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
 
   const playPostSound = useSound(SOUNDS.NEW_POST.id, 0.5);
   const playLikeSound = useSound(SOUNDS.LIKE.id, 0.5);
@@ -29,7 +31,7 @@ const CommunityWallScreen: React.FC = () => {
       }
     }, 0);
     return () => clearTimeout(timerId);
-  }, [posts, filter, sortBy, expandedPostId]); // Re-render icons when state changes
+  }, [posts, filter, sortBy, expandedPostId, avatar]); // Re-render icons when state changes
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +75,7 @@ const CommunityWallScreen: React.FC = () => {
           return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
       }
       return name.substring(0, 2).toUpperCase();
-  }
+  };
   
   const displayedPosts = useMemo(() => {
     let filteredPosts = posts;
@@ -136,6 +138,25 @@ const CommunityWallScreen: React.FC = () => {
             <p className="text-lg text-gray-300">Compartilhe uma benção ou reflexão com a comunidade!</p>
         </div>
 
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3 bg-gray-800 bg-opacity-70 border border-blue-700 rounded-xl px-4 py-3 w-full sm:w-auto">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-2xl font-semibold ${avatar ? avatar.color : 'bg-blue-600'}`}>
+                    {avatar ? (
+                        <i data-lucide={avatar.icon.toLowerCase()} className="w-6 h-6"></i>
+                    ) : (
+                        getInitials(userName)
+                    )}
+                </div>
+                <div className="text-left">
+                    <p className="text-sm text-gray-400">Você está postando como</p>
+                    <p className="font-semibold text-white">{userName}</p>
+                </div>
+            </div>
+            <ActionButton onClick={() => setIsAvatarModalOpen(true)} tooltip="Escolha um ícone e cor para seus posts.">
+                Personalizar Avatar
+            </ActionButton>
+        </div>
+
         <form onSubmit={handleSubmit} className="mb-6 bg-gray-800 bg-opacity-70 p-4 rounded-xl border border-blue-700">
           <textarea
             value={newPost}
@@ -171,8 +192,12 @@ const CommunityWallScreen: React.FC = () => {
             ) : displayedPosts.length > 0 ? displayedPosts.map(post => (
                 <div key={post.id} className={`p-4 rounded-xl shadow-lg border animate-fade-in transition-transform duration-300 hover:scale-[1.01] ${post.isUserPost ? 'bg-blue-900 bg-opacity-50 border-blue-700' : 'bg-gray-800 border-gray-700'}`}>
                     <div className="flex items-start">
-                        <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white mr-4 flex-shrink-0">
-                            {getInitials(post.author)}
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white mr-4 flex-shrink-0 ${post.avatar ? post.avatar.color : 'bg-blue-600'}`}>
+                            {post.avatar ? (
+                                <i data-lucide={post.avatar.icon.toLowerCase()} className="w-5 h-5"></i>
+                            ) : (
+                                getInitials(post.author)
+                            )}
                         </div>
                         <div className="flex-1">
                             <p className="font-bold text-blue-300">{post.author} {post.isUserPost && <span className="text-xs font-normal text-gray-400">(Você)</span>}</p>
@@ -236,6 +261,8 @@ const CommunityWallScreen: React.FC = () => {
                 </div>
             )}
         </div>
+
+        {isAvatarModalOpen && <AvatarPickerModal onClose={() => setIsAvatarModalOpen(false)} />}
 
         <div className="mt-6 text-center">
             <ActionButton onClick={() => navigateTo(Screen.Final)} className="bg-gradient-to-r from-gray-600 to-gray-800 focus:ring-gray-400">

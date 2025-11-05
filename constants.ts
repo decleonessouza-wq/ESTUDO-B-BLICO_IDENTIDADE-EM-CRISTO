@@ -36,6 +36,37 @@ export const SOUNDS = {
 
 };
 
+export const AVATAR_OPTIONS = {
+  icons: [
+    'flame',
+    'shield',
+    'sun',
+    'sparkles',
+    'anchor',
+    'feather',
+    'star',
+    'music-4',
+    'heart',
+    'book-open-check',
+    'crown',
+    'compass',
+  ],
+  colors: [
+    'bg-blue-600',
+    'bg-indigo-600',
+    'bg-emerald-500',
+    'bg-purple-600',
+    'bg-amber-500',
+    'bg-rose-500',
+    'bg-cyan-500',
+    'bg-teal-500',
+    'bg-fuchsia-500',
+    'bg-sky-500',
+    'bg-violet-600',
+    'bg-lime-500',
+  ],
+};
+
 // *** NOVO: USE O CAMINHO LOCAL PARA O PDF NA PASTA PUBLIC ***
 export const ESTUDO_PDF_URL = '/estudo.pdf';
 

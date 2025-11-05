@@ -48,9 +48,23 @@ const InstructionsScreen: React.FC = () => {
       iconColor: 'text-indigo-300'
     },
     {
+      icon: 'gamepad-2',
+      title: 'Explore os Jogos Bônus',
+      text: 'Ao terminar a jornada principal, visite o Salão de Jogos e fortaleça suas verdades em seis mini-jogos, incluindo o novo caça-palavras completo.',
+      color: 'from-amber-500/80 to-amber-800/80',
+      iconColor: 'text-amber-300'
+    },
+    {
+      icon: 'share-2',
+      title: 'Compartilhe Conquistas',
+      text: 'Concluiu um jogo bônus? Gere um cartão comemorativo e compartilhe com amigos diretamente do app.',
+      color: 'from-cyan-500/80 to-cyan-800/80',
+      iconColor: 'text-cyan-300'
+    },
+    {
       icon: 'trophy',
       title: 'Receba Recompensas',
-      text: 'Ao concluir a jornada, você receberá recompensas espirituais incríveis e personalizadas.',
+      text: 'Celebre suas vitórias espirituais e escolha, se quiser, receber uma recompensa física especial pelo correio.',
       color: 'from-yellow-500/80 to-yellow-800/80',
       iconColor: 'text-yellow-300'
     },

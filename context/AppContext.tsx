@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, ReactNode, useMemo, useEffect, useCallback } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 // Fix: Import StageProgress from types.ts to make it available in this context
-import { Screen, StageData, Post, StageProgress, Comment, ParticipantSummary, StageSnapshot } from '../types';
+import { Screen, StageData, Post, StageProgress, Comment, ParticipantSummary, StageSnapshot, BonusGameId, Avatar } from '../types';
 import { getStagesData } from '../constants';
 
 // 🚨 CORREÇÃO ESSENCIAL 1: Definição da URL da API (Backend na porta 4001)
@@ -22,6 +22,7 @@ interface AppState {
     userName: string;
     birthDate: string | null; // Alterado para aceitar null
     photo: string | null;
+    avatar: Avatar | null;
     stageProgress: Record<number, StageProgress>;
     currentStageId: number;
     posts: Post[];
@@ -33,6 +34,8 @@ interface AppState {
     completedAt: string | null;
     journeyStartAt: string | null;
     totalTimeMinutes: number | null;
+    completedBonusGames: BonusGameId[];
+    physicalRewardChoice: 'yes' | 'no' | null;
 }
 
 interface AppContextType extends AppState {
@@ -41,6 +44,7 @@ interface AppContextType extends AppState {
     setUserName: (name: string) => void;
     setBirthDate: (date: string | null) => void;
     setPhoto: (photo: string | null) => void;
+    setAvatar: (avatar: Avatar | null) => void;
     stagesData: StageData[];
     updateStageProgress: (stageId: number, score: number, reflection: string) => void;
     setCurrentStageId: (id: number) => void;
@@ -64,6 +68,8 @@ interface AppContextType extends AppState {
     markJourneyCompleted: () => void;
     getAdminParticipants: () => ParticipantSummary[];
     exitAdmin: () => void;
+    markBonusGameAsComplete: (gameId: BonusGameId) => void;
+    setPhysicalRewardChoice: (choice: 'yes' | 'no' | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -102,6 +108,7 @@ const loadInitialState = (): AppState => {
         stageProgress: progressData.stageProgress || {},
         currentStageId: progressData.currentStageId || 1,
         posts: progressData.posts || [],
+        avatar: progressData.avatar || null,
         userId: userData.userId,
         token: userData.token,
         isAdmin: userData.isAdmin,
@@ -109,6 +116,8 @@ const loadInitialState = (): AppState => {
         completedAt: progressData.completedAt || null,
         journeyStartAt: progressData.journeyStartAt || null,
         totalTimeMinutes: progressData.totalTimeMinutes ?? null,
+        completedBonusGames: progressData.completedBonusGames || [],
+        physicalRewardChoice: progressData.physicalRewardChoice ?? null,
     };
 };
 
@@ -124,9 +133,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const [stageProgress, setStageProgress] = useState<Record<number, StageProgress>>(initialState.stageProgress);
     const [currentStageId, setCurrentStageId] = useState(initialState.currentStageId);
     const [posts, setPosts] = useState<Post[]>(initialState.posts);
+    const [avatar, setAvatarState] = useState<Avatar | null>(initialState.avatar);
     const [loadingPosts, setLoadingPosts] = useState(false);
     const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
     const [bgmUrls, setBgmUrls] = useState<string[]>([]);
+    const [completedBonusGames, setCompletedBonusGames] = useState<Set<BonusGameId>>(
+        () => new Set(initialState.completedBonusGames)
+    );
+    const [physicalRewardChoice, setPhysicalRewardChoiceState] = useState<'yes' | 'no' | null>(
+        initialState.physicalRewardChoice ?? null
+    );
 
     // 🚨 Novos estados de autenticação
     const [userId, setUserId] = useState<string | null>(initialState.userId);
@@ -152,9 +168,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             completedAt,
             journeyStartAt,
             totalTimeMinutes,
+            completedBonusGames: Array.from(completedBonusGames),
+            physicalRewardChoice,
+            avatar,
         };
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
-    }, [userName, birthDate, photo, stageProgress, currentStageId, posts, completedAt, journeyStartAt, totalTimeMinutes]);
+    }, [userName, birthDate, photo, stageProgress, currentStageId, posts, completedAt, journeyStartAt, totalTimeMinutes, completedBonusGames, physicalRewardChoice, avatar]);
 
     // Efeito para salvar os dados de autenticação
     useEffect(() => {
@@ -246,6 +265,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         resetJourney();
     };
 
+    const markBonusGameAsComplete = useCallback((gameId: BonusGameId) => {
+        setCompletedBonusGames(prev => {
+            const updated = new Set(prev);
+            updated.add(gameId);
+            return updated;
+        });
+    }, []);
+
+    const setPhysicalRewardChoice = useCallback((choice: 'yes' | 'no' | null) => {
+        setPhysicalRewardChoiceState(choice);
+    }, []);
+
+    const setAvatar = useCallback((nextAvatar: Avatar | null) => {
+        setAvatarState(nextAvatar);
+    }, []);
+
     // ... O seu useEffect de `generateInitialPosts` original aqui ...
     useEffect(() => {
         const generateInitialPosts = async () => {
@@ -281,6 +316,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     const jsonStr = response.text.trim();
                     const generatedPosts: {author: string, message: string}[] = JSON.parse(jsonStr);
 
+                    const defaultAvatars = [
+                        { icon: 'sparkles', color: 'bg-purple-600' },
+                        { icon: 'flame', color: 'bg-amber-500' },
+                        { icon: 'compass', color: 'bg-sky-500' },
+                        { icon: 'heart', color: 'bg-rose-500' },
+                        { icon: 'anchor', color: 'bg-indigo-600' },
+                    ];
+
                     const newPosts: Post[] = generatedPosts.map((p, index) => ({
                         id: Date.now() + index,
                         author: p.author,
@@ -289,6 +332,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                         isLiked: false,
                         isUserPost: false,
                         comments: [],
+                        avatar: defaultAvatars[index % defaultAvatars.length],
                     }));
                     setPosts(newPosts);
                 } catch (error) {
@@ -376,6 +420,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             isLiked: false,
             isUserPost: true,
             comments: [],
+            avatar,
         };
         setPosts(prev => [newPost, ...prev]);
     };
@@ -415,6 +460,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setJourneyStartAt(null);
         setCompletedAt(null);
         setTotalTimeMinutes(null);
+        setCompletedBonusGames(new Set());
+        setPhysicalRewardChoiceState(null);
+        setAvatarState(null);
         localStorage.removeItem(LOCAL_STORAGE_KEY);
         navigateTo(Screen.Welcome);
     };
@@ -510,6 +558,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         markJourneyCompleted,
         getAdminParticipants,
         exitAdmin,
+        completedBonusGames: Array.from(completedBonusGames),
+        markBonusGameAsComplete,
+        physicalRewardChoice,
+        setPhysicalRewardChoice,
+        avatar,
+        setAvatar,
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
