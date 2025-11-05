@@ -155,12 +155,17 @@ const RewardsScreen: React.FC = () => {
           </div>
         </div>
 
-        <ActionButton onClick={() => navigateTo(Screen.Final)} className="mt-12">
-          Finalizar Jornada
-        </ActionButton>
-      </div>
-    </AnimatedScreen>
-  );
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
+          <ActionButton onClick={() => navigateTo(Screen.Bonus)}>
+            Explorar Jogos Bônus
+          </ActionButton>
+          <ActionButton onClick={() => navigateTo(Screen.Final)}>
+            Finalizar Jornada
+          </ActionButton>
+        </div>
+      </div>
+    </AnimatedScreen>
+  );
 };
 
 export default RewardsScreen;
