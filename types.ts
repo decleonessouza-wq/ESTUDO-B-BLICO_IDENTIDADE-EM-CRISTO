@@ -25,6 +25,11 @@ export enum Screen {
   AdminDashboard,
 }
 
+export interface Avatar {
+  icon: string;
+  color: string;
+}
+
 export type BonusGameId =
   | 'identityBuilder'
   | 'wordSearch'
@@ -73,6 +78,7 @@ export interface Post {
   isLiked: boolean;
   isUserPost: boolean;
   comments: Comment[];
+  avatar?: Avatar | null;
 }
 
 export interface StageProgress {
