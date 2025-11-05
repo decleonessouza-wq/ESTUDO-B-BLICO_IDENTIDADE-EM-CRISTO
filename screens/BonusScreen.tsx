@@ -20,6 +20,10 @@ type ShareData = {
   icon: string;
 };
 
+interface BonusScreenProps {
+  initialView?: BonusView;
+}
+
 const GAMES_CONFIG: Array<{
   id: BonusGameId;
   title: string;
@@ -106,7 +110,7 @@ const GAMES_CONFIG: Array<{
   },
 ];
 
-const BonusScreen: React.FC = () => {
+const BonusScreen: React.FC<BonusScreenProps> = ({ initialView = 'gratitude' }) => {
   const {
     userName,
     navigateTo,
@@ -121,12 +125,16 @@ const BonusScreen: React.FC = () => {
     [completedBonusGames],
   );
 
-  const [currentView, setCurrentView] = useState<BonusView>('gratitude');
+  const [currentView, setCurrentView] = useState<BonusView>(initialView);
   const shareableCardRef = useRef<HTMLDivElement>(null);
   const [shareData, setShareData] = useState<ShareData>({ title: '', icon: '' });
 
   const playSelectSound = useSound(SOUNDS.CLICK.id, 0.4);
   const playConfettiSound = useSound(SOUNDS.SUCCESS.id, 0.3);
+
+  useEffect(() => {
+    setCurrentView(initialView);
+  }, [initialView]);
 
   useEffect(() => {
     if ((window as any).lucide) {

@@ -9,6 +9,7 @@ import DeclarationScreen from './screens/DeclarationScreen';
 import CongratulationsScreen from './screens/CongratulationsScreen';
 import RewardsScreen from './screens/RewardsScreen';
 import BonusScreen from './screens/BonusScreen';
+import BonusWordSearchScreen from './screens/BonusWordSearchScreen';
 import FinalScreen from './screens/FinalScreen';
 import CommunityWallScreen from './screens/CommunityWallScreen';
 import ShareReportScreen from './screens/ShareReportScreen';
@@ -31,10 +32,11 @@ const ScreenRenderer: React.FC<{ screen: Screen }> = ({ screen }) => {
       return <CongratulationsScreen />;
     case Screen.Rewards:
       return <RewardsScreen />;
+    case Screen.BonusWordSearch:
+      return <BonusWordSearchScreen />;
     case Screen.Bonus:
     case Screen.BonusGame:
     case Screen.BonusReward:
-    case Screen.BonusWordSearch:
       return <BonusScreen />;
     case Screen.Final:
       return <FinalScreen />;
