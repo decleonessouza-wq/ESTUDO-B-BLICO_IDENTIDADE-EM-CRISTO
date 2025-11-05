@@ -14,7 +14,11 @@ export enum Screen {
    */
   BonusGame = Bonus,
   BonusReward = Bonus,
-  BonusWordSearch = Bonus,
+  /**
+   * Standalone entry so the comprehensive word search keeps its own route
+   * while reusing the shared bonus hub infrastructure.
+   */
+  BonusWordSearch,
   Final,
   CommunityWall,
   ShareReport,
