@@ -7,11 +7,27 @@ export enum Screen {
   Declaration,
   Congratulations,
   Rewards,
+  Bonus,
+  /**
+   * Legacy aliases kept for compatibility with earlier branches that
+   * referenced dedicated bonus screen routes. All map to the main bonus hub.
+   */
+  BonusGame = Bonus,
+  BonusReward = Bonus,
+  BonusWordSearch = Bonus,
   Final,
   CommunityWall,
   ShareReport,
   AdminDashboard,
 }
+
+export type BonusGameId =
+  | 'identityBuilder'
+  | 'wordSearch'
+  | 'completeWordSearch'
+  | 'memory'
+  | 'victoryLeap'
+  | 'mindBattle';
 
 export interface QuizQuestion {
   question: string;
