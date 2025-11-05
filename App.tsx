@@ -32,6 +32,9 @@ const ScreenRenderer: React.FC<{ screen: Screen }> = ({ screen }) => {
     case Screen.Rewards:
       return <RewardsScreen />;
     case Screen.Bonus:
+    case Screen.BonusGame:
+    case Screen.BonusReward:
+    case Screen.BonusWordSearch:
       return <BonusScreen />;
     case Screen.Final:
       return <FinalScreen />;
