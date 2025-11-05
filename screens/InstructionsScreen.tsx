@@ -50,7 +50,7 @@ const InstructionsScreen: React.FC = () => {
     {
       icon: 'gamepad-2',
       title: 'Explore os Jogos Bônus',
-      text: 'Ao terminar a jornada principal, visite o Salão de Jogos e fortaleça suas verdades em cinco mini-jogos temáticos.',
+      text: 'Ao terminar a jornada principal, visite o Salão de Jogos e fortaleça suas verdades em seis mini-jogos, incluindo o novo caça-palavras completo.',
       color: 'from-amber-500/80 to-amber-800/80',
       iconColor: 'text-amber-300'
     },

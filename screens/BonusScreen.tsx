@@ -10,6 +10,7 @@ import WordSearchGame from './WordSearchGame';
 import MemoryGame from './MemoryGame';
 import VictoryLeapGame from './VictoryLeapGame';
 import MindBattleGame from './MindBattleGame';
+import CompleteWordSearchGame from './CompleteWordSearchGame';
 import { SOUNDS } from '../constants';
 
 type BonusView = 'gratitude' | 'hub' | BonusGameId | 'reward';
@@ -18,6 +19,10 @@ type ShareData = {
   title: string;
   icon: string;
 };
+
+interface BonusScreenProps {
+  initialView?: BonusView;
+}
 
 const GAMES_CONFIG: Array<{
   id: BonusGameId;
@@ -53,6 +58,18 @@ const GAMES_CONFIG: Array<{
       bg: 'bg-teal-900/40',
       icon: 'text-teal-400',
       button: 'bg-teal-600 hover:bg-teal-500',
+    },
+  },
+  {
+    id: 'completeWordSearch',
+    title: 'Mapa da Identidade',
+    description: 'Desvende todas as palavras-chave do estudo completo.',
+    icon: 'map',
+    colors: {
+      border: 'border-emerald-700',
+      bg: 'bg-emerald-900/40',
+      icon: 'text-emerald-400',
+      button: 'bg-emerald-600 hover:bg-emerald-500',
     },
   },
   {
@@ -93,6 +110,7 @@ const GAMES_CONFIG: Array<{
   },
 ];
 
+const BonusScreen: React.FC<BonusScreenProps> = ({ initialView = 'gratitude' }) => {
 const BonusScreen: React.FC = () => {
   const {
     userName,
@@ -108,12 +126,16 @@ const BonusScreen: React.FC = () => {
     [completedBonusGames],
   );
 
-  const [currentView, setCurrentView] = useState<BonusView>('gratitude');
+  const [currentView, setCurrentView] = useState<BonusView>(initialView);
   const shareableCardRef = useRef<HTMLDivElement>(null);
   const [shareData, setShareData] = useState<ShareData>({ title: '', icon: '' });
 
   const playSelectSound = useSound(SOUNDS.CLICK.id, 0.4);
   const playConfettiSound = useSound(SOUNDS.SUCCESS.id, 0.3);
+
+  useEffect(() => {
+    setCurrentView(initialView);
+  }, [initialView]);
 
   useEffect(() => {
     if ((window as any).lucide) {
@@ -268,6 +290,28 @@ const BonusScreen: React.FC = () => {
     return (
       <div className="animate-fade-in">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Recompensa Bônus Final!</h1>
+        <div className="space-y-4 text-left md:text-center text-gray-200 mb-10">
+          <p>
+            Queridos jovens e adolescentes, obrigado por caminharem comigo nesta jornada. Vocês são respostas vivas do amor de
+            Cristo, e é uma honra servir a cada um de vocês.
+          </p>
+          <p className="italic text-cyan-200 font-semibold">
+            "Quem vive a verdade não apenas conhece sua identidade, mas transforma o mundo ao seu redor."
+          </p>
+          <p className="text-sm md:text-base text-gray-300">
+            "Portanto, se alguém está em Cristo, é nova criação. As coisas antigas já passaram; eis que surgiram coisas novas!"
+            — 2 Coríntios 5:17
+          </p>
+        </div>
+        <div className="relative w-full overflow-hidden rounded-2xl shadow-2xl border border-cyan-700 bg-black/40 mb-10" style={{ paddingTop: '56.25%' }}>
+          <iframe
+            className="absolute top-0 left-0 w-full h-full"
+            src="https://www.youtube.com/embed/VM3x-6CWKPM"
+            title="Mensagem Final ao Grupo"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          ></iframe>
+        </div>
         <p className="text-xl text-gray-300 mb-8">
           Deseja receber uma recompensa física especial (ex: adesivo) pelo correio?
         </p>
@@ -305,6 +349,13 @@ const BonusScreen: React.FC = () => {
         return <IdentityBuilderGame onComplete={() => handleGameComplete('identityBuilder')} onBack={() => setCurrentView('hub')} />;
       case 'wordSearch':
         return <WordSearchGame onComplete={() => handleGameComplete('wordSearch')} onBack={() => setCurrentView('hub')} />;
+      case 'completeWordSearch':
+        return (
+          <CompleteWordSearchGame
+            onComplete={() => handleGameComplete('completeWordSearch')}
+            onBack={() => setCurrentView('hub')}
+          />
+        );
       case 'memory':
         return <MemoryGame onComplete={() => handleGameComplete('memory')} onBack={() => setCurrentView('hub')} />;
       case 'victoryLeap':
