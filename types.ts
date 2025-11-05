@@ -7,11 +7,19 @@ export enum Screen {
   Declaration,
   Congratulations,
   Rewards,
+  Bonus,
   Final,
   CommunityWall,
   ShareReport,
   AdminDashboard,
 }
+
+export type BonusGameId =
+  | 'identityBuilder'
+  | 'wordSearch'
+  | 'memory'
+  | 'victoryLeap'
+  | 'mindBattle';
 
 export interface QuizQuestion {
   question: string;

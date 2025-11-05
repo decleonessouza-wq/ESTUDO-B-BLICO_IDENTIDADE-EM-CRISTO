@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, ReactNode, useMemo, useEffect, useCallback } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 // Fix: Import StageProgress from types.ts to make it available in this context
-import { Screen, StageData, Post, StageProgress, Comment, ParticipantSummary, StageSnapshot } from '../types';
+import { Screen, StageData, Post, StageProgress, Comment, ParticipantSummary, StageSnapshot, BonusGameId } from '../types';
 import { getStagesData } from '../constants';
 
 // 🚨 CORREÇÃO ESSENCIAL 1: Definição da URL da API (Backend na porta 4001)
@@ -33,6 +33,8 @@ interface AppState {
     completedAt: string | null;
     journeyStartAt: string | null;
     totalTimeMinutes: number | null;
+    completedBonusGames: BonusGameId[];
+    physicalRewardChoice: 'yes' | 'no' | null;
 }
 
 interface AppContextType extends AppState {
@@ -64,6 +66,8 @@ interface AppContextType extends AppState {
     markJourneyCompleted: () => void;
     getAdminParticipants: () => ParticipantSummary[];
     exitAdmin: () => void;
+    markBonusGameAsComplete: (gameId: BonusGameId) => void;
+    setPhysicalRewardChoice: (choice: 'yes' | 'no' | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -109,6 +113,8 @@ const loadInitialState = (): AppState => {
         completedAt: progressData.completedAt || null,
         journeyStartAt: progressData.journeyStartAt || null,
         totalTimeMinutes: progressData.totalTimeMinutes ?? null,
+        completedBonusGames: progressData.completedBonusGames || [],
+        physicalRewardChoice: progressData.physicalRewardChoice ?? null,
     };
 };
 
@@ -127,6 +133,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const [loadingPosts, setLoadingPosts] = useState(false);
     const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
     const [bgmUrls, setBgmUrls] = useState<string[]>([]);
+    const [completedBonusGames, setCompletedBonusGames] = useState<Set<BonusGameId>>(
+        () => new Set(initialState.completedBonusGames)
+    );
+    const [physicalRewardChoice, setPhysicalRewardChoiceState] = useState<'yes' | 'no' | null>(
+        initialState.physicalRewardChoice ?? null
+    );
 
     // 🚨 Novos estados de autenticação
     const [userId, setUserId] = useState<string | null>(initialState.userId);
@@ -152,9 +164,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             completedAt,
             journeyStartAt,
             totalTimeMinutes,
+            completedBonusGames: Array.from(completedBonusGames),
+            physicalRewardChoice,
         };
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
-    }, [userName, birthDate, photo, stageProgress, currentStageId, posts, completedAt, journeyStartAt, totalTimeMinutes]);
+    }, [userName, birthDate, photo, stageProgress, currentStageId, posts, completedAt, journeyStartAt, totalTimeMinutes, completedBonusGames, physicalRewardChoice]);
 
     // Efeito para salvar os dados de autenticação
     useEffect(() => {
@@ -245,6 +259,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         localStorage.removeItem(USER_STORAGE_KEY);
         resetJourney();
     };
+
+    const markBonusGameAsComplete = useCallback((gameId: BonusGameId) => {
+        setCompletedBonusGames(prev => {
+            const updated = new Set(prev);
+            updated.add(gameId);
+            return updated;
+        });
+    }, []);
+
+    const setPhysicalRewardChoice = useCallback((choice: 'yes' | 'no' | null) => {
+        setPhysicalRewardChoiceState(choice);
+    }, []);
 
     // ... O seu useEffect de `generateInitialPosts` original aqui ...
     useEffect(() => {
@@ -415,6 +441,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setJourneyStartAt(null);
         setCompletedAt(null);
         setTotalTimeMinutes(null);
+        setCompletedBonusGames(new Set());
+        setPhysicalRewardChoiceState(null);
         localStorage.removeItem(LOCAL_STORAGE_KEY);
         navigateTo(Screen.Welcome);
     };
@@ -510,6 +538,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         markJourneyCompleted,
         getAdminParticipants,
         exitAdmin,
+        completedBonusGames: Array.from(completedBonusGames),
+        markBonusGameAsComplete,
+        physicalRewardChoice,
+        setPhysicalRewardChoice,
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
