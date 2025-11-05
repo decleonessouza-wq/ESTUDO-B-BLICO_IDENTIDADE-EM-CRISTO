@@ -5,9 +5,10 @@ import ActionButton from '../components/ActionButton';
 import { Screen } from '../types';
 
 const FinalScreen: React.FC = () => {
-  const { userName, resetJourney, navigateTo } = useAppContext();
+  const { userName, resetJourney, navigateTo, markJourneyCompleted } = useAppContext();
 
   useEffect(() => {
+    markJourneyCompleted();
     // Use a timeout to ensure React has finished its render cycle before Lucide modifies the DOM.
     const timerId = setTimeout(() => {
       if ((window as any).lucide) {
@@ -15,7 +16,7 @@ const FinalScreen: React.FC = () => {
       }
     }, 0);
     return () => clearTimeout(timerId);
-  }, []);
+  }, [markJourneyCompleted]);
 
   return (
     <AnimatedScreen>

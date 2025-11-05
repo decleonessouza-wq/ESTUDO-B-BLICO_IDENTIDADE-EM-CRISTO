@@ -11,6 +11,7 @@ import RewardsScreen from './screens/RewardsScreen';
 import FinalScreen from './screens/FinalScreen';
 import CommunityWallScreen from './screens/CommunityWallScreen';
 import ShareReportScreen from './screens/ShareReportScreen';
+import AdminDashboardScreen from './screens/AdminDashboardScreen';
 
 // ScreenRenderer agora é um componente puro que recebe a tela a ser renderizada como prop.
 const ScreenRenderer: React.FC<{ screen: Screen }> = ({ screen }) => {
@@ -35,6 +36,8 @@ const ScreenRenderer: React.FC<{ screen: Screen }> = ({ screen }) => {
         return <CommunityWallScreen />;
     case Screen.ShareReport:
         return <ShareReportScreen />;
+    case Screen.AdminDashboard:
+        return <AdminDashboardScreen />;
     default:
       return <WelcomeScreen />;
   }

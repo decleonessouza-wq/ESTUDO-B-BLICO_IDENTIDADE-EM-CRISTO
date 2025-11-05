@@ -10,6 +10,7 @@ export enum Screen {
   Final,
   CommunityWall,
   ShareReport,
+  AdminDashboard,
 }
 
 export interface QuizQuestion {
@@ -58,4 +59,27 @@ export interface StageProgress {
   score: number;
   reflection: string;
   completed: boolean;
+}
+
+export interface StageSnapshot {
+  id: number;
+  title: string;
+  score: number;
+  reflection: string;
+  completed: boolean;
+}
+
+export interface ParticipantSummary {
+  id: string;
+  name: string;
+  birthDate: string | null;
+  totalScore: number;
+  completedStages: number;
+  totalStages: number;
+  stages: StageSnapshot[];
+  posts: Post[];
+  startedAt: string | null;
+  completedAt: string | null;
+  totalTimeMinutes: number | null;
+  lastUpdated: string;
 }
