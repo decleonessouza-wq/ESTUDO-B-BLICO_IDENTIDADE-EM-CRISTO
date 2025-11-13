@@ -1,6 +1,5 @@
 [build]
-  # baixa os arquivos reais do LFS antes do build
-  command = "git lfs install && git lfs fetch --all && git lfs checkout && npm ci && npm run build"
+  command = "npm ci && npm run build"
   publish = "dist"
 
 # SPA: redireciona qualquer rota pra index.html
