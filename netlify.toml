@@ -2,14 +2,12 @@
   command = "npm ci && npm run build"
   publish = "dist"
 
-# SPA: redireciona qualquer rota pra index.html
+[[headers]]
+  for = "/*"
+    [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# (opcional) headers básicos
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"

@@ -55,7 +55,7 @@ export const getStagesData = (): StageData[] => [
   {
     id: 1,
     title: 'A Crise de Identidade - Criado à Imagem de Deus',
-    videoUrl: '/videos/etapa-1.mp4',
+    videoUrl: 'https://youtu.be/d43oKRfSetM',
     biblicalReflection: 'Agora somos filhos de Deus... o mundo não nos conhece, porque não o conhece a Ele. (1 João 3:1-2)',
     motivationalPhrase: 'Descubra quem você é aos olhos de quem te criou.',
     questions: getRandomQuestions(1),
@@ -63,7 +63,7 @@ export const getStagesData = (): StageData[] => [
   {
     id: 2,
     title: 'A QUEDA: Identidade distorcida pelo pecado',
-    videoUrl: '/videos/etapa-2.mp4',
+    videoUrl: 'https://youtu.be/YA4BL0oU9ew',
     biblicalReflection: 'Todos pecaram e destituídos estão da glória de Deus. (Romanos 3:23)',
     motivationalPhrase: 'Entender a queda é o primeiro passo para se levantar.',
     questions: getRandomQuestions(2),
@@ -71,7 +71,7 @@ export const getStagesData = (): StageData[] => [
   {
     id: 3,
     title: 'A REDENÇÃO: Nova identidade em Cristo',
-    videoUrl: '/videos/etapa-3.mp4',
+    videoUrl: 'https://youtu.be/bK7cmvd-vNg',
     biblicalReflection: 'Eu te louvarei, porque de um modo assombrosamente maravilhoso fui formado. (Salmos 139:14)',
     motivationalPhrase: 'Você não é um acidente. Você é uma obra-prima divina.',
     questions: getRandomQuestions(3),
@@ -79,7 +79,7 @@ export const getStagesData = (): StageData[] => [
   {
     id: 4,
     title: 'Quem é você em Cristo?',
-    videoUrl: '/videos/etapa-4.mp4',
+    videoUrl: 'https://youtu.be/fohNQaGzeHk',
     biblicalReflection: 'Se alguém está em Cristo, nova criatura é; as coisas velhas já passaram. (2 Coríntios 5:17)',
     motivationalPhrase: 'Em Cristo, você não é reformado. Você é recriado.',
     questions: getRandomQuestions(4),
@@ -87,7 +87,7 @@ export const getStagesData = (): StageData[] => [
   {
     id: 5,
     title: 'OS três Espelhos da Identidade - Firmado no Espelho Certo',
-    videoUrl: '/videos/etapa-5.mp4',
+    videoUrl: 'https://youtu.be/CByjT2mAoNw',
     biblicalReflection: 'Aquele que atenta bem para a lei perfeita da liberdade, e persevera nela... será bem-aventurado. (Tiago 1:25)',
     motivationalPhrase: 'Pare de se ver pelo espelho do mundo. A Palavra de Deus é o único reflexo fiel.',
     questions: getRandomQuestions(5),
@@ -95,7 +95,7 @@ export const getStagesData = (): StageData[] => [
   {
     id: 6,
     title: 'A Resposta Final - Filho de Deus',
-    videoUrl: '/videos/etapa-6.mp4',
+    videoUrl: 'https://youtu.be/9SGwhD2lOr0',
     biblicalReflection: 'Não mais eu, mas Cristo vive em mim. (Gálatas 2:20)',
     motivationalPhrase: 'Sua identidade não é um título, é um estilo de vida. VIVA SUA VERDADEIRA IDENTIDADE!',
     questions: getRandomQuestions(6),
