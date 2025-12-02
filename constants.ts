@@ -103,4 +103,4 @@ export const getStagesData = (): StageData[] => [
 ];
 
 // Adicionado o logo da igreja.
-export const CHURCH_LOGO_URL = 'https://i.postimg.cc/7LVcT2cb/com_a_mocidade.png';
+export const CHURCH_LOGO_URL = 'https://i.postimg.cc/T3223pSy/Identidade-logo-app.png';
