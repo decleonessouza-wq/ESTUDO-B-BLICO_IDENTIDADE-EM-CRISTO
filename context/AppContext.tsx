@@ -1,6 +1,5 @@
 import { addCommunityPost, listenToPosts } from "../firebase/postsService";
 
-// Fix: Implement the AppContext to manage global state
 import React, {
   createContext,
   useState,
@@ -10,8 +9,10 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { GoogleGenAI, Type } from "@google/genai";
-// Fix: Import StageProgress from types.ts to make it available in this context
+
+// Se você não estiver mais usando o GoogleGenAI, pode remover essa importação.
+// import { GoogleGenAI, Type } from "@google/genai";
+
 import {
   Screen,
   StageData,
@@ -24,11 +25,8 @@ import {
 } from "../types";
 import { getStagesData } from "../constants";
 
-// 🔥 Novo: integração com Firestore para salvar jornada
+// Integração com Firestore para salvar jornada
 import { saveJourney, JourneyDocument } from "../firebase/journeyService";
-
-// ⚠️ Mantendo a constante da API, mas não vamos mais usar nas funções de login/register
-const API_URL = "http://localhost:4001/api";
 
 const LOCAL_STORAGE_KEY = "identidadeCristoProgress";
 const USER_STORAGE_KEY = "identidadeCristoUser";
@@ -98,9 +96,7 @@ interface AppContextType extends AppState {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const loadInitialState = (): AppState => {
-  // Carrega o progresso da jornada (posts, stages)
   const savedProgress = localStorage.getItem(LOCAL_STORAGE_KEY);
-  // Carrega o estado do usuário (auth)
   const savedUser = localStorage.getItem(USER_STORAGE_KEY);
 
   let progressData: Partial<AppState> = {};
@@ -190,7 +186,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 
   const stagesData = useMemo(() => getStagesData(), []);
 
-  // 🔥 Função auxiliar: gerar userId local se não existir
+  // 🔥 totalScore tipado corretamente
+  const totalScore = useMemo(() => {
+    return Object.values(stageProgress).reduce<number>(
+      (acc, stage) => acc + (stage as StageProgress).score,
+      0
+    );
+  }, [stageProgress]);
+
+  // Gera userId local se não existir
   const ensureUserId = useCallback(
     (name: string, date: string | null): string => {
       if (userId) return userId;
@@ -202,7 +206,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     [userId]
   );
 
-  // 🔥 Sincronizar jornada com Firestore sempre que algo importante mudar
+  // Sincronizar jornada com Firestore
   useEffect(() => {
     const syncToFirestore = async () => {
       if (!userId || !userName) return;
@@ -218,10 +222,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
           birthDate,
           stageProgress,
           currentStageId,
-          totalScore: Object.values(stageProgress).reduce(
-            (acc: number, s) => acc + (s as StageProgress).score,
-            0
-          ),
+          totalScore,
           completedStages: completedStagesCount,
           journeyStartAt,
           completedAt,
@@ -236,7 +237,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       }
     };
 
-    // Não bloquear a UI se der erro
     syncToFirestore();
   }, [
     userId,
@@ -244,6 +244,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     birthDate,
     stageProgress,
     currentStageId,
+    totalScore,
     journeyStartAt,
     completedAt,
     totalTimeMinutes,
@@ -251,7 +252,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     physicalRewardChoice,
   ]);
 
-  // Salvar progresso da jornada no localStorage
+  // Salvar progresso no localStorage
   useEffect(() => {
     const dataToSave: Partial<AppState> = {
       userName,
@@ -281,18 +282,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     physicalRewardChoice,
   ]);
 
-  // Salvar dados de autenticação
+  // Salvar dados de "auth" local
   useEffect(() => {
     const userData: UserData = { userId, token, isAdmin };
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
   }, [userId, token, isAdmin]);
 
-  // 🚨 FUNÇÕES DE BACKEND (AGORA LOCAL, SEM FETCH)
+  // Login simples (sem backend)
   const login = useCallback(
     async (name: string, date: string): Promise<boolean> => {
       setUserName(name);
       setBirthDate(date);
-      const id = ensureUserId(name, date);
+      ensureUserId(name, date);
       setToken(null);
       setIsAdmin(false);
       setIsLoaded(true);
@@ -305,7 +306,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     async (name: string, date: string): Promise<boolean> => {
       setUserName(name);
       setBirthDate(date);
-      const id = ensureUserId(name, date);
+      ensureUserId(name, date);
       setToken(null);
       setIsAdmin(false);
       setIsLoaded(true);
@@ -314,10 +315,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     [ensureUserId]
   );
 
-  // 🔐 Admin: usar senha do .env, com fallback pra antiga
+  // Admin: senha via env com fallback
   const ADMIN_USER = "Decleones Andrade de Souza";
   const ADMIN_PASS =
-    import.meta.env.VITE_ADMIN_ACCESS_CODE || "Emil1608*";
+    (import.meta as any).env?.VITE_ADMIN_ACCESS_CODE || "Emil1608*";
 
   const loginAdmin = async (
     user: string,
@@ -357,30 +358,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     []
   );
 
-// 🔥 Ouvir posts em tempo real do Firestore
-useEffect(() => {
-  setLoadingPosts(true);
+  // 🔥 Ouvir posts em tempo real do Firestore
+  useEffect(() => {
+    setLoadingPosts(true);
 
-  const unsubscribe = listenToPosts((firebasePosts) => {
-    // Converte Firestore → formato do seu app
-    const mapped: Post[] = firebasePosts.map((p) => ({
-      id: p.id || Date.now(),
-      author: p.userName,
-      message: p.message,
-      likes: 0,
-      isLiked: false,
-      isUserPost: false,
-      comments: [],
-    }));
+    const unsubscribe = listenToPosts((firebasePosts) => {
+      const mapped: Post[] = firebasePosts.map((p, index) => ({
+        id:
+          typeof p.id === "number"
+            ? p.id
+            : Date.now() + index, // garante number
+        author: p.userName,
+        message: p.message,
+        likes: 0,
+        isLiked: false,
+        isUserPost: false,
+        comments: [],
+      }));
 
-    // Atualiza o mural
-    setPosts(mapped);
-    setLoadingPosts(false);
-  });
+      setPosts(mapped);
+      setLoadingPosts(false);
+    });
 
-  // Remove listener ao sair
-  return () => unsubscribe();
-}, []);
+    return () => unsubscribe();
+  }, []);
 
   const navigateTo = (screen: Screen) => {
     setCurrentScreen(screen);
@@ -426,7 +427,7 @@ useEffect(() => {
     setToken(null);
     localStorage.removeItem(USER_STORAGE_KEY);
     navigateTo(Screen.Welcome);
-  }, [navigateTo]);
+  }, []);
 
   const updateStageProgress = (
     stageId: number,
@@ -445,47 +446,24 @@ useEffect(() => {
     }
   }, [isAudioUnlocked]);
 
-  const totalScore = useMemo(() => {
-    return Object.values(stageProgress).reduce(
-      (acc: number, stage) => acc + (stage as StageProgress).score,
-      0
-    );
-  }, [stageProgress]);
+  const addPost = (message: string) => {
+    if (!userId || !userName) return;
 
-const addPost = (message: string) => {
-  if (!userName) return;
+    const newPost: Post = {
+      id: Date.now(),
+      author: userName,
+      message,
+      likes: 0,
+      isLiked: false,
+      isUserPost: true,
+      comments: [],
+    };
+    setPosts((prev) => [newPost, ...prev]);
 
-  // Garante userId mesmo que não exista ainda
-  const effectiveUserId = userId ?? ensureUserId(userName, birthDate);
-
-  console.log("📨 Enviando post para Firestore:", {
-    effectiveUserId,
-    userName,
-    message,
-  });
-
-  // Post local – aparece imediatamente
-  const newPost: Post = {
-    id: Date.now(),
-    author: userName,
-    message,
-    likes: 0,
-    isLiked: false,
-    isUserPost: true,
-    comments: [],
-  };
-
-  setPosts((prev) => [newPost, ...prev]);
-
-  // Salvar no Firestore (não bloqueia a UI)
-  addCommunityPost(effectiveUserId, userName, message)
-    .then(() => {
-      console.log("✅ Post salvo no Firestore com sucesso!");
-    })
-    .catch((error) => {
-      console.error("❌ Erro ao salvar post no Firestore:", error);
+    addCommunityPost(userId, userName, message).catch((error) => {
+      console.error("Erro ao salvar post no Firestore:", error);
     });
-};
+  };
 
   const toggleLike = (id: number) => {
     setPosts((prev) =>
@@ -533,7 +511,7 @@ const addPost = (message: string) => {
     navigateTo(Screen.Welcome);
   };
 
-  // Snapshot para painel do admin (mantendo lógica original com localStorage)
+  // Snapshot para painel do admin (localStorage)
   useEffect(() => {
     if (!userName || isAdmin) {
       return;

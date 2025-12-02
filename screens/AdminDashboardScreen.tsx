@@ -76,9 +76,9 @@ const toDateSafe = (value: any): Date | null => {
     const d = new Date(value);
     return isNaN(d.getTime()) ? null : d;
   }
-  if (value.toDate) {
+  if ((value as any).toDate) {
     try {
-      return value.toDate();
+      return (value as any).toDate();
     } catch {
       return null;
     }
@@ -173,7 +173,7 @@ const AdminDashboardScreen: React.FC = () => {
       ]);
 
       // Ordenar jornadas por updatedAt ou completedAt
-      const normalizedJourneys: JourneyDoc[] = journeysRaw
+      const normalizedJourneys: JourneyDoc[] = (journeysRaw as any[])
         .map((j: any) => ({
           ...j,
           id: j.userId || j.id,
@@ -188,10 +188,12 @@ const AdminDashboardScreen: React.FC = () => {
           return db.getTime() - da.getTime();
         });
 
-      const normalizedPosts: AdminPost[] = postsRaw.map((p: any) => ({
-        ...p,
-        id: p.id,
-      }));
+      const normalizedPosts: AdminPost[] = (postsRaw as any[]).map(
+        (p: any) => ({
+          ...p,
+          id: p.id,
+        })
+      );
 
       setJourneys(normalizedJourneys);
       setPosts(normalizedPosts);
@@ -199,7 +201,6 @@ const AdminDashboardScreen: React.FC = () => {
       if (normalizedJourneys.length > 0) {
         setSelectedUserId(normalizedJourneys[0].userId);
       }
-
     } catch (error) {
       console.error("Erro ao carregar dados do painel admin:", error);
     } finally {
@@ -210,22 +211,22 @@ const AdminDashboardScreen: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
+
   /* ========= DERIVADOS / FILTROS ========= */
 
   const filteredJourneys = useMemo(() => {
-    return applyDateFilter(
+    return applyDateFilter<JourneyDoc>(
       journeys,
       dateFilter,
       customStart,
       customEnd,
       (j) =>
-        toDateSafe(j.updatedAt || j.completedAt || j.journeyStartAt) ??
-        null
+        toDateSafe(j.updatedAt || j.completedAt || j.journeyStartAt) ?? null
     );
   }, [journeys, dateFilter, customStart, customEnd]);
 
   const filteredPosts = useMemo(() => {
-    const byDate = applyDateFilter(
+    const byDate = applyDateFilter<AdminPost>(
       posts,
       dateFilter,
       customStart,
@@ -509,6 +510,7 @@ const AdminDashboardScreen: React.FC = () => {
 
     doc.save("relatorio_posts.pdf");
   };
+
   /* ========= RENDER ========= */
 
   return (
@@ -939,6 +941,7 @@ const AdminDashboardScreen: React.FC = () => {
             </div>
           </div>
         )}
+
         {/* ABA POSTS */}
         {!loading && currentTab === "posts" && (
           <div className="space-y-4">
