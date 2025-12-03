@@ -8,6 +8,9 @@ import Reflection from './Study/Reflection';
 import StageStepper from '../components/StageStepper';
 import { useSound } from '../hooks/useSound';
 import { SOUNDS, QUIZ_BGM_URLS } from '../constants';
+import PlayerStatusBar from '../components/PlayerStatusBar'; // ⬅️ NOVO IMPORT
+import AchievementsPanel from "../components/AchievementsPanel";
+
 
 type StudyStep = 'video' | 'quiz' | 'reflection';
 
@@ -299,8 +302,14 @@ const StudyScreen: React.FC = () => {
 
         {renderContent()}
       </div>
+
+      {/* ⬇️ NOVO: barra de status fixa para o player/jornada */}
+      <PlayerStatusBar />
     </AnimatedScreen>
   );
 };
+
+{/* Painel de conquistas da jornada */}
+<AchievementsPanel />
 
 export default StudyScreen;

@@ -5,6 +5,7 @@ import ActionButton from '../components/ActionButton';
 import AnimatedScreen from '../components/AnimatedScreen';
 import { CHURCH_LOGO_URL, SOUNDS } from '../constants';
 import { useSound } from '../hooks/useSound';
+import PlayerStatusBar from '../components/PlayerStatusBar'; // ⬅️ NOVO IMPORT
 
 const WelcomeScreen: React.FC = () => {
   const { setUserName, navigateTo, loginAdmin, markJourneyStart } = useAppContext();
@@ -144,6 +145,9 @@ const WelcomeScreen: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* ⬇️ NOVO: barra de status/jogador visível também na tela inicial */}
+      <PlayerStatusBar />
     </AnimatedScreen>
   );
 };

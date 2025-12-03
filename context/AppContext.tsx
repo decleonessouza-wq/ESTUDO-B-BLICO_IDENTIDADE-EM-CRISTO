@@ -10,9 +10,6 @@ import React, {
   useCallback,
 } from "react";
 
-// Se você não estiver mais usando o GoogleGenAI, pode remover essa importação.
-// import { GoogleGenAI, Type } from "@google/genai";
-
 import {
   Screen,
   StageData,
@@ -22,6 +19,9 @@ import {
   ParticipantSummary,
   StageSnapshot,
   BonusGameId,
+  Medal,
+  LevelDefinition,
+  UserProfile,
 } from "../types";
 import { getStagesData } from "../constants";
 
@@ -91,9 +91,126 @@ interface AppContextType extends AppState {
   exitAdmin: () => void;
   markBonusGameAsComplete: (gameId: BonusGameId) => void;
   setPhysicalRewardChoice: (choice: "yes" | "no" | null) => void;
+
+  // Gamificação
+  xp: number;
+  level: number;
+  levelTitle: string;
+  medals: Medal[];
+  userProfile: UserProfile | null;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
+
+// --------- GAMIFICAÇÃO BÁSICA (somente cálculo em memória) ---------
+
+const LEVELS: LevelDefinition[] = [
+  { level: 1, minXp: 0, title: "Filho Amado" },
+  { level: 2, minXp: 100, title: "Discípulo em Crescimento" },
+  { level: 3, minXp: 250, title: "Reformador da Mente" },
+  { level: 4, minXp: 450, title: "Influenciador de Geração" },
+  { level: 5, minXp: 700, title: "Embaixador de Cristo" },
+];
+
+const MEDALS_BASE: Medal[] = [
+  {
+    id: "first_stage",
+    name: "Primeiro Passo",
+    description: "Concluiu a primeira etapa da jornada.",
+    icon: "🥇",
+  },
+  {
+    id: "journey_completed",
+    name: "Jornada Concluída",
+    description: "Concluiu todas as etapas do estudo.",
+    icon: "🏁",
+  },
+  {
+    id: "high_score",
+    name: "Fogo no Quiz",
+    description: "Alcançou 80% ou mais da pontuação máxima.",
+    icon: "🔥",
+  },
+  {
+    id: "bonus_master",
+    name: "Caçador de Bônus",
+    description: "Completou pelo menos 3 jogos bônus.",
+    icon: "🎮",
+  },
+];
+
+const calculateXpFromJourney = (
+  stageProgress: Record<number, StageProgress>,
+  completedBonusGames: Set<BonusGameId>
+): number => {
+  const baseScore = Object.values(stageProgress).reduce<number>(
+    (acc, s) => acc + (s as StageProgress).score,
+    0
+  );
+
+  const completedStages = Object.values(stageProgress).filter(
+    (s) => (s as StageProgress).completed
+  ).length;
+
+  const bonusXp = completedBonusGames.size * 20;
+
+  // Fórmula simples: pontos do quiz + bônus por etapa concluída + bônus por jogos
+  return baseScore + completedStages * 10 + bonusXp;
+};
+
+const getLevelForXp = (xp: number): LevelDefinition => {
+  let current = LEVELS[0];
+  for (const lvl of LEVELS) {
+    if (xp >= lvl.minXp) {
+      current = lvl;
+    } else {
+      break;
+    }
+  }
+  return current;
+};
+
+const getEarnedMedals = (
+  stageProgress: Record<number, StageProgress>,
+  totalScore: number,
+  completedBonusGames: Set<BonusGameId>,
+  totalStagesAvailable: number
+): Medal[] => {
+  const medals: Medal[] = [];
+
+  const completedStages = Object.values(stageProgress).filter(
+    (s) => (s as StageProgress).completed
+  ).length;
+
+  const maxPossibleScore = totalStagesAvailable * 100; // suposição: 100 pts por etapa
+
+  const hasStage1Completed = (stageProgress[1] as StageProgress | undefined)
+    ?.completed;
+
+  if (hasStage1Completed) {
+    const m = MEDALS_BASE.find((m) => m.id === "first_stage");
+    if (m) medals.push(m);
+  }
+
+  if (completedStages === totalStagesAvailable && totalStagesAvailable > 0) {
+    const m = MEDALS_BASE.find((m) => m.id === "journey_completed");
+    if (m) medals.push(m);
+  }
+
+  if (maxPossibleScore > 0 && totalScore / maxPossibleScore >= 0.8) {
+    const m = MEDALS_BASE.find((m) => m.id === "high_score");
+    if (m) medals.push(m);
+  }
+
+  if (completedBonusGames.size >= 3) {
+    const m = MEDALS_BASE.find((m) => m.id === "bonus_master");
+    if (m) medals.push(m);
+  }
+
+  return medals;
+};
+
+// -------------------------------------------------------- //
 
 const loadInitialState = (): AppState => {
   const savedProgress = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -186,13 +303,69 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 
   const stagesData = useMemo(() => getStagesData(), []);
 
-  // 🔥 totalScore tipado corretamente
+  // totalScore tipado corretamente
   const totalScore = useMemo(() => {
     return Object.values(stageProgress).reduce<number>(
       (acc, stage) => acc + (stage as StageProgress).score,
       0
     );
   }, [stageProgress]);
+
+  // --------- Gamificação derivada ---------
+
+  const xp = useMemo(
+    () => calculateXpFromJourney(stageProgress, completedBonusGames),
+    [stageProgress, completedBonusGames]
+  );
+
+  const currentLevelDef = useMemo(() => getLevelForXp(xp), [xp]);
+
+  const medals = useMemo(
+    () =>
+      getEarnedMedals(
+        stageProgress,
+        totalScore,
+        completedBonusGames,
+        stagesData.length
+      ),
+    [stageProgress, totalScore, completedBonusGames, stagesData.length]
+  );
+
+  const userProfile: UserProfile | null = useMemo(() => {
+    if (!userId && !userName) return null;
+
+    const completedStagesCount = Object.values(stageProgress).filter(
+      (s) => (s as StageProgress).completed
+    ).length;
+
+    return {
+      userId: userId ?? "guest",
+      name: userName || "Convidado",
+      birthDate,
+      level: currentLevelDef.level,
+      xp,
+      medals: medals.map((m) => m.id),
+      totalScore,
+      completedStages: completedStagesCount,
+      totalStages: stagesData.length,
+      journeyStartAt,
+      completedAt,
+      totalTimeMinutes,
+    };
+  }, [
+    userId,
+    userName,
+    birthDate,
+    currentLevelDef.level,
+    xp,
+    medals,
+    totalScore,
+    stageProgress,
+    stagesData.length,
+    journeyStartAt,
+    completedAt,
+    totalTimeMinutes,
+  ]);
 
   // Gera userId local se não existir
   const ensureUserId = useCallback(
@@ -358,7 +531,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     []
   );
 
-  // 🔥 Ouvir posts em tempo real do Firestore
+  // Ouvir posts em tempo real do Firestore
   useEffect(() => {
     setLoadingPosts(true);
 
@@ -629,6 +802,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     markBonusGameAsComplete,
     physicalRewardChoice,
     setPhysicalRewardChoice,
+
+    // Gamificação exposta
+    xp,
+    level: currentLevelDef.level,
+    levelTitle: currentLevelDef.title,
+    medals,
+    userProfile,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
