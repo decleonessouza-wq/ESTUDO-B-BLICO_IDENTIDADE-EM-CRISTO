@@ -1,239 +1,265 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
+import { StageProgress } from "../types";
 
 interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: string;
   unlocked: boolean;
-  category: "progresso" | "compartilhar" | "bonus" | "tempo";
 }
 
 const AchievementsPanel: React.FC = () => {
   const {
     userName,
-    stagesData,
-    stageProgress,
     totalScore,
-    posts,
+    stageProgress,
+    stagesData,
     completedBonusGames,
-    journeyStartAt,
-    completedAt,
-    totalTimeMinutes,
+    posts,
   } = useAppContext();
 
-  const displayName = userName || "jogador";
+  const [isOpen, setIsOpen] = useState(false);
 
-  const totalStages = stagesData.length || 1;
-  const completedStages = Object.values(stageProgress).filter(
-    (sp) => sp && (sp as any).completed
-  ).length;
+  // Re-render ícones do Lucide quando abrir/fechar
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      if ((window as any).lucide) {
+        (window as any).lucide.createIcons();
+      }
+    }, 0);
 
-  const userPostsCount = posts.filter((p) => p.isUserPost).length;
-  const bonusCount = completedBonusGames.length;
+    return () => clearTimeout(timerId);
+  }, [isOpen]);
 
-  const achievements = useMemo<Achievement[]>(() => {
-    const all: Achievement[] = [
+  const {
+    achievements,
+    unlockedCount,
+    totalAchievements,
+  } = useMemo(() => {
+    const stageList = Object.values(stageProgress || {}) as StageProgress[];
+
+    const totalStages = stagesData.length;
+    const completedStages = stageList.filter((s) => s.completed).length;
+
+    const allStagesDone =
+      totalStages > 0 && completedStages === totalStages;
+
+    const allBonusDone =
+      completedBonusGames && completedBonusGames.length > 0 &&
+      completedBonusGames.length >= 5; // qtde de jogos bônus
+
+    const userPosts = posts.filter((p) => p.isUserPost);
+    const hasFirstPost = userPosts.length > 0;
+    const hasPopularPost = userPosts.some((p) => p.likes >= 5);
+
+    const hasHighStageScore = stageList.some((s) => s.score >= 800);
+    const hasAnyReflection = stageList.some(
+      (s) => s.reflection && s.reflection.trim().length >= 80
+    );
+
+    const hasBigTotalScore = totalScore >= 3000;
+
+    const list: Achievement[] = [
       {
-        id: "first-step",
-        title: "Primeiro Passo",
-        description: "Concluiu a primeira etapa da jornada.",
-        icon: "👣",
-        category: "progresso",
-        unlocked: completedStages >= 1,
+        id: "all-stages",
+        title: "Jornada Completa",
+        description: "Você concluiu todas as etapas do estudo bíblico.",
+        unlocked: allStagesDone,
       },
       {
-        id: "halfway",
-        title: "No Meio do Caminho",
-        description: "Chegou ou passou da metade das etapas.",
-        icon: "🛤️",
-        category: "progresso",
-        unlocked: completedStages >= Math.ceil(totalStages / 2),
+        id: "all-bonus",
+        title: "Mestre dos Jogos",
+        description: "Você completou todos os jogos bônus disponíveis.",
+        unlocked: allBonusDone,
       },
       {
-        id: "finish-journey",
-        title: "Firme até o Fim",
-        description: "Concluiu todas as etapas da jornada.",
-        icon: "🏁",
-        category: "progresso",
-        unlocked: completedStages >= totalStages && !!completedAt,
+        id: "first-post",
+        title: "Voz Ativa",
+        description: "Você fez sua primeira publicação no mural.",
+        unlocked: hasFirstPost,
       },
       {
-        id: "high-score",
-        title: "Mente Afiada",
-        description: "Alcançou 80 pontos ou mais no total.",
-        icon: "🧠",
-        category: "progresso",
-        unlocked: totalScore >= 80,
+        id: "popular-post",
+        title: "Post Abençoando Muitos",
+        description: "Um dos seus posts recebeu 5 ou mais curtidas.",
+        unlocked: hasPopularPost,
       },
       {
-        id: "share-1",
-        title: "Coração que Compartilha",
-        description: "Publicou sua primeira reflexão no mural.",
-        icon: "💬",
-        category: "compartilhar",
-        unlocked: userPostsCount >= 1,
+        id: "high-stage-score",
+        title: "Resposta Afiada",
+        description: "Você tirou uma pontuação alta em uma das etapas.",
+        unlocked: hasHighStageScore,
       },
       {
-        id: "share-3",
-        title: "Influencer da Fé",
-        description: "Publicou 3 ou mais reflexões no mural.",
-        icon: "📣",
-        category: "compartilhar",
-        unlocked: userPostsCount >= 3,
+        id: "deep-reflection",
+        title: "Coração Aberto",
+        description:
+          "Você escreveu uma reflexão pessoal mais profunda em alguma etapa.",
+        unlocked: hasAnyReflection,
       },
       {
-        id: "bonus-1",
-        title: "Explorador",
-        description: "Concluiu o primeiro jogo bônus.",
-        icon: "🧭",
-        category: "bonus",
-        unlocked: bonusCount >= 1,
-      },
-      {
-        id: "bonus-3",
-        title: "Caçador de Bônus",
-        description: "Concluiu 3 jogos bônus ou mais.",
-        icon: "🎯",
-        category: "bonus",
-        unlocked: bonusCount >= 3,
-      },
-      {
-        id: "focus-fast",
-        title: "Foco Total",
-        description: "Concluiu a jornada em até 60 minutos.",
-        icon: "⚡",
-        category: "tempo",
-        unlocked:
-          !!completedAt &&
-          typeof totalTimeMinutes === "number" &&
-          totalTimeMinutes > 0 &&
-          totalTimeMinutes <= 60,
-      },
-      {
-        id: "focus-consistent",
-        title: "Constante em Cristo",
-        description: "Concluiu a jornada levando mais de 3 dias, sem desistir.",
-        icon: "📆",
-        category: "tempo",
-        unlocked: (() => {
-          if (!journeyStartAt || !completedAt) return false;
-          const start = new Date(journeyStartAt).getTime();
-          const end = new Date(completedAt).getTime();
-          const diffDays = (end - start) / (1000 * 60 * 60 * 24);
-          return diffDays >= 3;
-        })(),
+        id: "total-score",
+        title: "Fome de Deus",
+        description:
+          "Sua pontuação total mostra que você mergulhou firme na jornada.",
+        unlocked: hasBigTotalScore,
       },
     ];
 
-    return all;
-  }, [
-    completedStages,
-    totalStages,
-    totalScore,
-    userPostsCount,
-    bonusCount,
-    journeyStartAt,
-    completedAt,
-    totalTimeMinutes,
-  ]);
+    const unlocked = list.filter((a) => a.unlocked).length;
 
-  const unlockedCount = achievements.filter((a) => a.unlocked).length;
+    return {
+      achievements: list,
+      unlockedCount: unlocked,
+      totalAchievements: list.length,
+    };
+  }, [stageProgress, stagesData, completedBonusGames, posts, totalScore]);
 
-  if (!userName) {
-    // Antes de o usuário se identificar, não precisa mostrar nada
-    return null;
-  }
+  // Se ainda não tem nome, não mostra o painel
+  if (!userName) return null;
+
+  // Primeira parte do nome para deixar mais pessoal
+  const firstName = userName.split(" ")[0];
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-6">
-      <div className="bg-slate-900/80 border border-blue-800/70 rounded-2xl p-4 md:p-5 shadow-lg shadow-blue-900/30">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
-          <div>
-            <h2 className="text-lg md:text-xl font-semibold text-white flex items-center gap-2">
-              <span>Conquistas da Jornada</span>
-              <span className="text-xl">🏅</span>
-            </h2>
-            <p className="text-xs md:text-sm text-gray-300">
-              {displayName}, veja os sinais de como Deus já está
-              trabalhando em você ao longo desta jornada.
-            </p>
-          </div>
-          <div className="flex gap-3 text-xs md:text-sm">
-            <div className="px-3 py-1 rounded-full bg-blue-950/60 border border-blue-700/60 text-blue-200">
-              {unlockedCount} de {achievements.length} conquistas
-            </div>
-            <div className="px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-700/60 text-emerald-200">
-              Pontos: {totalScore}
-            </div>
-          </div>
-        </div>
+    <div
+      className="
+        fixed
+        bottom-16
+        left-1/2
+        -translate-x-1/2
+        z-30
+        w-full
+        px-3
+        flex
+        justify-center
+        pointer-events-none
+      "
+    >
+      <div className="pointer-events-auto max-w-sm w-full flex flex-col items-center gap-2">
+        {/* Botão colapsado */}
+        {!isOpen && (
+          <button
+            type="button"
+            onClick={() => setIsOpen(true)}
+            className="
+              inline-flex items-center gap-2
+              px-4 py-2
+              rounded-full
+              bg-slate-900/90
+              border border-amber-400/70
+              shadow-lg shadow-amber-500/30
+              text-xs text-amber-50
+              hover:bg-slate-800/90
+              transition
+            "
+          >
+            <i
+              data-lucide="trophy"
+              className="w-4 h-4 text-amber-300"
+            ></i>
+            <span className="font-semibold">
+              Conquistas: {unlockedCount}/{totalAchievements}
+            </span>
+            <span className="text-[10px] opacity-80">↑ abrir</span>
+          </button>
+        )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {achievements.map((a) => (
-            <div
-              key={a.id}
-              className={`relative rounded-xl border px-3 py-3 text-xs md:text-sm transition-all duration-200 ${
-                a.unlocked
-                  ? "bg-slate-800/80 border-emerald-500/70 shadow-md shadow-emerald-500/20"
-                  : "bg-slate-900/60 border-slate-700/80 opacity-70"
-              }`}
-            >
-              <div className="flex items-start gap-2">
+        {/* Painel expandido */}
+        {isOpen && (
+          <div
+            className="
+              w-full
+              rounded-2xl
+              bg-slate-950/95
+              border border-amber-500/70
+              shadow-2xl shadow-amber-500/40
+              p-3
+              text-xs text-slate-50
+              backdrop-blur
+            "
+          >
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.25em] text-amber-300/90">
+                  Conquistas da Jornada
+                </p>
+                <p className="text-[11px] text-slate-200 mt-1">
+                  {firstName}, você já desbloqueou{" "}
+                  <span className="font-semibold">
+                    {unlockedCount}/{totalAchievements}
+                  </span>{" "}
+                  conquistas.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="
+                  text-[10px]
+                  px-2 py-1
+                  rounded-full
+                  bg-slate-800/80
+                  border border-slate-600
+                  hover:bg-slate-700
+                  transition
+                "
+              >
+                fechar
+              </button>
+            </div>
+
+            <div className="mt-1 max-h-[60vh] overflow-y-auto pr-1 space-y-2">
+              {achievements.map((ach) => (
                 <div
-                  className={`h-8 w-8 rounded-full flex items-center justify-center text-lg ${
-                    a.unlocked
-                      ? "bg-gradient-to-br from-emerald-400 to-cyan-400"
-                      : "bg-slate-800/80 text-slate-400"
-                  }`}
+                  key={ach.id}
+                  className={`
+                    rounded-xl
+                    border
+                    p-2.5
+                    flex
+                    items-start
+                    gap-2
+                    ${
+                      ach.unlocked
+                        ? "border-emerald-500/70 bg-emerald-900/20"
+                        : "border-slate-700/70 bg-slate-900/40"
+                    }
+                  `}
                 >
-                  {a.icon}
+                  <div className="mt-0.5">
+                    <i
+                      data-lucide={ach.unlocked ? "sparkles" : "lock"}
+                      className={`w-4 h-4 ${
+                        ach.unlocked
+                          ? "text-emerald-300"
+                          : "text-slate-500"
+                      }`}
+                    ></i>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-semibold">
+                      {ach.title}
+                    </p>
+                    <p className="text-[11px] text-slate-300 mt-0.5">
+                      {ach.description}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p
-                    className={`font-semibold ${
-                      a.unlocked ? "text-emerald-200" : "text-gray-300"
-                    }`}
-                  >
-                    {a.title}
-                  </p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">
-                    {a.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Etiqueta de categoria */}
-              <div className="mt-2 flex justify-between items-center">
-                <span className="text-[10px] uppercase tracking-wide text-gray-500">
-                  {a.category === "progresso"
-                    ? "Progresso na jornada"
-                    : a.category === "compartilhar"
-                    ? "Compartilhar & comunidade"
-                    : a.category === "bonus"
-                    ? "Jogos bônus"
-                    : "Tempo & constância"}
-                </span>
-                <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full ${
-                    a.unlocked
-                      ? "bg-emerald-500/20 text-emerald-200 border border-emerald-400/60"
-                      : "bg-slate-800 text-slate-400 border border-slate-700"
-                  }`}
-                >
-                  {a.unlocked ? "Desbloqueada" : "Bloqueada"}
-                </span>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <p className="mt-3 text-[11px] text-gray-400">
-          Dica: continue respondendo com atenção, refletindo com sinceridade e
-          compartilhando suas percepções. As conquistas não são só “medalhas”,
-          são lembranças de como Deus está formando sua identidade em Cristo.
-        </p>
+            <p className="mt-3 text-[10px] text-slate-400 text-center">
+              Continue avançando: cada etapa, jogo bônus e partilha no mural
+              pode desbloquear novas conquistas. 🏆
+            </p>
+
+            <div className="mt-1 text-[9px] text-slate-500 text-right">
+              Dev tools: OFF
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

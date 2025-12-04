@@ -15,6 +15,12 @@ import FinalScreen from "./screens/FinalScreen";
 import CommunityWallScreen from "./screens/CommunityWallScreen";
 import ShareReportScreen from "./screens/ShareReportScreen";
 import AdminDashboardScreen from "./screens/AdminDashboardScreen";
+import UserProfileScreen from "./screens/UserProfileScreen"; // 👤 Tela de perfil
+import SpiritualDiaryScreen from "./screens/SpiritualDiaryScreen";
+import WeeklyChallengesScreen from "./screens/WeeklyChallengesScreen";
+import PrayerScreen from "./screens/PrayerScreen";
+
+
 
 // 🔧 chave de flag no localStorage para modo dev
 const DEV_TOOLS_FLAG_KEY = "identidadeDevTools";
@@ -83,10 +89,12 @@ const DevTestsPanel: React.FC<DevTestsPanelProps> = ({
             <span className="text-slate-400">Nome:</span> {userName || "—"}
           </p>
           <p>
-            <span className="text-slate-400">Tela atual:</span> {Screen[currentScreen]}
+            <span className="text-slate-400">Tela atual:</span>{" "}
+            {Screen[currentScreen]}
           </p>
           <p>
-            <span className="text-slate-400">Pontuação total:</span> {totalScore}
+            <span className="text-slate-400">Pontuação total:</span>{" "}
+            {totalScore}
           </p>
           <p>
             <span className="text-slate-400">Jogos bônus concluídos:</span>{" "}
@@ -94,7 +102,9 @@ const DevTestsPanel: React.FC<DevTestsPanelProps> = ({
           </p>
           <p>
             <span className="text-slate-400">Concluído em:</span>{" "}
-            {completedAt ? new Date(completedAt).toLocaleString("pt-BR") : "—"}
+            {completedAt
+              ? new Date(completedAt).toLocaleString("pt-BR")
+              : "—"}
           </p>
         </div>
 
@@ -178,13 +188,13 @@ const AppOverlay: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const handleRunTest = (testId: string) => {
     console.log("[DEV TEST]", testId);
-    // Aqui no futuro dá para plugar ações reais de teste se você quiser
+    // aqui futuramente você pode ligar ações reais
   };
 
   return (
     <>
       <div className="relative min-h-screen bg-gradient-to-b from-[#020617] via-[#020617] to-[#020617] text-white">
-        {/* Badge de Dev no cantinho (não interfere no layout) */}
+        {/* Badge de Dev no cantinho */}
         <DeveloperModeBadge
           enabled={isDevToolsEnabled}
           toggle={toggleDevTools}
@@ -238,6 +248,14 @@ const AppRoutes: React.FC = () => {
       return <ShareReportScreen />;
     case Screen.AdminDashboard:
       return <AdminDashboardScreen />;
+    case Screen.UserProfile: // 👤 rota nova
+      return <UserProfileScreen />;
+    case Screen.SpiritualDiary:
+      return <SpiritualDiaryScreen />;
+    case Screen.WeeklyChallenges:
+      return <WeeklyChallengesScreen />;
+    case Screen.PrayerCenter:
+      return <PrayerScreen />;
     default:
       return <WelcomeScreen />;
   }

@@ -1,10 +1,19 @@
+// src/components/PlayerStatusBar.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 
 const MAX_LEVEL = 5;
-const XP_PER_LEVEL = 200; // ajuste se quiser subir de nível mais rápido/devagar
+const XP_PER_LEVEL = 200;
 
-const PlayerStatusBar: React.FC = () => {
+interface PlayerStatusBarProps {
+  /** 
+   * fixed = true  -> barra flutuante fixa no rodapé (usado na tela inicial)
+   * fixed = false -> barra inline, entra no fluxo da página (usado no StudyScreen)
+   */
+  fixed?: boolean;
+}
+
+const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({ fixed = true }) => {
   const {
     userName,
     totalScore,
@@ -16,7 +25,7 @@ const PlayerStatusBar: React.FC = () => {
 
   const [isOpen, setIsOpen] = useState(false);
 
-  // 👉 animação “+X pts”
+  // animação “+X pts”
   const [lastScore, setLastScore] = useState(totalScore);
   const [scoreDelta, setScoreDelta] = useState<number | null>(null);
 
@@ -38,7 +47,6 @@ const PlayerStatusBar: React.FC = () => {
     level,
     levelProgress,
     nextLevelXp,
-    currentLevelXp,
   } = useMemo(() => {
     const totalStagesLocal = stagesData.length;
     const completedStagesLocal = Object.values(stageProgress).filter(
@@ -71,7 +79,6 @@ const PlayerStatusBar: React.FC = () => {
       level: levelLocal,
       levelProgress: levelProgressLocal,
       nextLevelXp: nextLevelXpLocal,
-      currentLevelXp: currentLevelXpLocal,
     };
   }, [stagesData, stageProgress, totalScore]);
 
@@ -79,18 +86,24 @@ const PlayerStatusBar: React.FC = () => {
     stagesData.find((s) => s.id === currentStageId)?.title ||
     `Etapa ${currentStageId}`;
 
+  const firstName = userName ? userName.split(" ")[0] : "Jornada";
+
+  // 👉 classes do container: FIXO ou INLINE
+  const containerClass = fixed
+    ? "fixed bottom-3 left-1/2 -translate-x-1/2 z-30"
+    : "relative w-full";
+
   return (
-    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30">
-      {/* HUD “mini” recolhido */}
+    <div className={containerClass}>
+      {/* HUD recolhido */}
       {!isOpen && (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/90 border border-cyan-500/50 shadow-lg shadow-cyan-500/30 text-xs text-cyan-50 hover:bg-slate-800/90 transition"
+          className={`flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/90 border border-cyan-500/50 shadow-lg shadow-cyan-500/30 text-xs text-cyan-50 hover:bg-slate-800/90 transition
+          ${fixed ? "" : "w-full justify-center"}`}
         >
-          <span className="text-[11px] font-semibold">
-            {userName ? userName.split(" ")[0] : "Jornada"}
-          </span>
+          <span className="text-[11px] font-semibold">{firstName}</span>
           <span className="h-5 w-px bg-cyan-500/40" />
           <span className="text-[11px]">
             Nível <strong>{level}</strong> • {completionPercent}% concluído
@@ -101,13 +114,15 @@ const PlayerStatusBar: React.FC = () => {
 
       {/* HUD expandido */}
       {isOpen && (
-        <div className="w-[360px] max-w-[95vw] rounded-2xl bg-gradient-to-r from-slate-950/95 via-slate-900/95 to-slate-950/95 border border-cyan-500/60 shadow-2xl shadow-cyan-500/40 p-3 text-xs text-slate-50 backdrop-blur">
+        <div
+          className={`rounded-2xl bg-gradient-to-r from-slate-950/95 via-slate-900/95 to-slate-950/95 border border-cyan-500/60 shadow-2xl shadow-cyan-500/40 p-3 text-xs text-slate-50 backdrop-blur
+          ${fixed ? "w-[360px] max-w-[95vw]" : "w-full"}`}
+        >
           {/* header + botão fechar */}
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-[11px] text-cyan-200 font-semibold uppercase tracking-wide">
-                Jornada de{" "}
-                {userName ? userName.split(" ")[0] : "convidado(a)"}
+                Jornada de {firstName}
               </p>
               <p className="text-[11px] text-slate-300">
                 {completedStages}/{totalStages} etapas • {completionPercent}%
@@ -139,8 +154,7 @@ const PlayerStatusBar: React.FC = () => {
             </div>
             <div className="text-right">
               <p className="text-[10px] text-slate-400">
-                Próx. nível em{" "}
-                {Math.max(0, nextLevelXp - totalScore)} pts
+                Próx. nível em {Math.max(0, nextLevelXp - totalScore)} pts
               </p>
               <p className="text-[10px] text-emerald-300">
                 Bônus concl.: {completedBonusGames.length}

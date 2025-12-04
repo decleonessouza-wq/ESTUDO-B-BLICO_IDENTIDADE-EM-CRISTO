@@ -1,6 +1,7 @@
 import { addCommunityPost, listenToPosts } from "../firebase/postsService";
 
-import React, {
+import React,
+{
   createContext,
   useState,
   useContext,
@@ -31,6 +32,15 @@ import { saveJourney, JourneyDocument } from "../firebase/journeyService";
 const LOCAL_STORAGE_KEY = "identidadeCristoProgress";
 const USER_STORAGE_KEY = "identidadeCristoUser";
 const ADMIN_PARTICIPANTS_KEY = "identidadeCristoParticipants";
+
+// 🔹 Fila offline de posts
+const OFFLINE_QUEUE_KEY = "identidadeCristoOfflineQueue";
+
+interface OfflineQueuedPost {
+  tempId: number;
+  message: string;
+  createdAt: string;
+}
 
 interface UserData {
   userId: string | null;
@@ -98,6 +108,11 @@ interface AppContextType extends AppState {
   levelTitle: string;
   medals: Medal[];
   userProfile: UserProfile | null;
+
+  // Offline
+  isOnline: boolean;
+  offlineQueuedPostsCount: number;
+  syncOfflineQueuedPosts: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -301,6 +316,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     initialState.totalTimeMinutes ?? null
   );
 
+  // 🔹 Estado offline
+  const [isOnline, setIsOnline] = useState<boolean>(
+    typeof navigator !== "undefined" ? navigator.onLine : true
+  );
+  const [offlineQueuedPosts, setOfflineQueuedPosts] = useState<
+    OfflineQueuedPost[]
+  >(() => {
+    try {
+      const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const stagesData = useMemo(() => getStagesData(), []);
 
   // totalScore tipado corretamente
@@ -351,7 +381,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       journeyStartAt,
       completedAt,
       totalTimeMinutes,
-    };
+    } as unknown as UserProfile; // garante compat em caso de tipos diferentes
   }, [
     userId,
     userName,
@@ -378,6 +408,58 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     },
     [userId]
   );
+
+  // 🔹 Sincronizar fila offline -> Firestore
+  const syncOfflineQueuedPosts = useCallback(async () => {
+    if (!userId || !userName || offlineQueuedPosts.length === 0) return;
+
+    const toSync = [...offlineQueuedPosts];
+
+    for (const item of toSync) {
+      try {
+        await addCommunityPost(userId, userName, item.message);
+      } catch (error) {
+        console.error("Erro ao sincronizar post offline:", error);
+        // se falhar, mantém o restante na fila
+        return;
+      }
+    }
+
+    // se tudo deu certo, limpa fila
+    setOfflineQueuedPosts([]);
+  }, [offlineQueuedPosts, userId, userName]);
+
+  // 🔹 Listener de online/offline
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      syncOfflineQueuedPosts();
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [syncOfflineQueuedPosts]);
+
+  // 🔹 Persistir fila offline no localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        OFFLINE_QUEUE_KEY,
+        JSON.stringify(offlineQueuedPosts)
+      );
+    } catch (error) {
+      console.error("Erro ao salvar fila offline:", error);
+    }
+  }, [offlineQueuedPosts]);
 
   // Sincronizar jornada com Firestore
   useEffect(() => {
@@ -631,10 +713,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       isUserPost: true,
       comments: [],
     };
+
+    // já aparece no mural, mesmo offline
     setPosts((prev) => [newPost, ...prev]);
 
+    // se estiver offline, entra na fila para sincronizar depois
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      setOfflineQueuedPosts((prev) => [
+        ...prev,
+        {
+          tempId: newPost.id,
+          message,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+      return;
+    }
+
+    // se estiver online, tenta mandar pro Firestore
     addCommunityPost(userId, userName, message).catch((error) => {
       console.error("Erro ao salvar post no Firestore:", error);
+      // se falhar mesmo online, joga para fila offline
+      setOfflineQueuedPosts((prev) => [
+        ...prev,
+        {
+          tempId: newPost.id,
+          message,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
     });
   };
 
@@ -809,6 +916,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     levelTitle: currentLevelDef.title,
     medals,
     userProfile,
+
+    // Offline exposto para o app
+    isOnline,
+    offlineQueuedPostsCount: offlineQueuedPosts.length,
+    syncOfflineQueuedPosts,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
