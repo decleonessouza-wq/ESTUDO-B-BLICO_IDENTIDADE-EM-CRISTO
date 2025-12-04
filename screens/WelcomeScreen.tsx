@@ -5,9 +5,18 @@ import ActionButton from '../components/ActionButton';
 import AnimatedScreen from '../components/AnimatedScreen';
 import { CHURCH_LOGO_URL, SOUNDS } from '../constants';
 import { useSound } from '../hooks/useSound';
+import PlayerStatusBar from '../components/PlayerStatusBar'; // ⬅️ NOVO IMPORT
 
 const WelcomeScreen: React.FC = () => {
-  const { setUserName, navigateTo, loginAdmin, markJourneyStart } = useAppContext();
+  const {
+    setUserName,
+    navigateTo,
+    loginAdmin,
+    markJourneyStart,
+    // ⬇️ IMPORTANTE: destrutura o unlockAudio do contexto
+    unlockAudio,
+  } = useAppContext();
+
   const [name, setName] = useState('');
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [adminName, setAdminName] = useState('');
@@ -19,7 +28,15 @@ const WelcomeScreen: React.FC = () => {
     const trimmedName = name.trim();
     if (trimmedName) {
       setUserName(trimmedName);
+
+      // 🔊 DESBLOQUEIA ÁUDIO NO PRIMEIRO CLIQUE
+      if (unlockAudio) {
+        unlockAudio();
+      }
+
+      // Som de introdução (agora liberado)
       playIntroSound();
+
       markJourneyStart();
       navigateTo(Screen.Instructions);
     }
@@ -28,7 +45,7 @@ const WelcomeScreen: React.FC = () => {
   const canStart = name.trim() !== '';
 
   const toggleAdminLogin = () => {
-    setShowAdminLogin(prev => !prev);
+    setShowAdminLogin((prev) => !prev);
     setAdminError('');
   };
 
@@ -56,21 +73,26 @@ const WelcomeScreen: React.FC = () => {
   return (
     <AnimatedScreen>
       <div className="flex flex-col justify-between items-center text-center text-white min-h-[85vh] w-full max-w-sm mx-auto py-4">
-        
         {/* Top Content Block */}
         <div>
-          <img 
-            src={CHURCH_LOGO_URL} 
-            alt="Logo da Igreja" 
+          <img
+            src={CHURCH_LOGO_URL}
+            alt="Logo da Igreja"
             className="w-48 h-48 object-contain mx-auto mb-1 animate-fade-in-down"
           />
-          <p className="text-sm text-gray-400 mb-4 -mt-2 animate-fade-in-down" style={{ animationDelay: '0.15s' }}>
+          <p
+            className="text-sm text-gray-400 mb-4 -mt-2 animate-fade-in-down"
+            style={{ animationDelay: '0.15s' }}
+          >
             Igreja Ev. Pentecostal - Jardim de Oração Independente P90
           </p>
-          <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300 mb-4 animate-fade-in-down" style={{ animationDelay: '0.3s' }}>
+          <h1
+            className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300 mb-4 animate-fade-in-down"
+            style={{ animationDelay: '0.3s' }}
+          >
             Identidade em Cristo
           </h1>
-          <p 
+          <p
             className="text-xl md:text-2xl text-gray-300 animate-fade-in-down"
             style={{ animationDelay: '0.45s' }}
           >
@@ -79,7 +101,7 @@ const WelcomeScreen: React.FC = () => {
         </div>
 
         {/* Bottom Action Block */}
-        <div 
+        <div
           className="w-full animate-fade-in-up"
           style={{ animationDelay: '0.6s' }}
         >
@@ -100,13 +122,18 @@ const WelcomeScreen: React.FC = () => {
             className="mt-4 w-full text-sm text-blue-300 hover:text-blue-100 transition-colors"
             type="button"
           >
-            {showAdminLogin ? 'Fechar acesso administrativo' : 'Acesso Administrativo'}
+            {showAdminLogin
+              ? 'Fechar acesso administrativo'
+              : 'Acesso Administrativo'}
           </button>
 
           {showAdminLogin && (
             <div className="mt-4 bg-gray-900 bg-opacity-70 border border-blue-700 rounded-xl p-4 text-left space-y-3">
               <div>
-                <label htmlFor="admin-name" className="block text-xs uppercase tracking-wider text-gray-400 mb-1">
+                <label
+                  htmlFor="admin-name"
+                  className="block text-xs uppercase tracking-wider text-gray-400 mb-1"
+                >
                   Nome do Administrador
                 </label>
                 <input
@@ -120,7 +147,10 @@ const WelcomeScreen: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="admin-password" className="block text-xs uppercase tracking-wider text-gray-400 mb-1">
+                <label
+                  htmlFor="admin-password"
+                  className="block text-xs uppercase tracking-wider text-gray-400 mb-1"
+                >
                   Senha de Acesso
                 </label>
                 <input
@@ -137,13 +167,19 @@ const WelcomeScreen: React.FC = () => {
                 <p className="text-xs text-red-400">{adminError}</p>
               )}
 
-              <ActionButton onClick={handleAdminAccess} className="w-full bg-gradient-to-r from-purple-600 to-indigo-500">
+              <ActionButton
+                onClick={handleAdminAccess}
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-500"
+              >
                 Entrar como Administrador
               </ActionButton>
             </div>
           )}
         </div>
       </div>
+
+      {/* barra de status/jogador visível também na tela inicial */}
+      <PlayerStatusBar />
     </AnimatedScreen>
   );
 };

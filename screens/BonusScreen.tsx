@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useAppContext } from '../context/AppContext';
-import { Screen, BonusGameId } from '../types';
-import ActionButton from '../components/ActionButton';
-import AnimatedScreen from '../components/AnimatedScreen';
-import { useSound } from '../hooks/useSound';
-import confetti from 'canvas-confetti';
-import IdentityBuilderGame from './IdentityBuilderGame';
-import WordSearchGame from './WordSearchGame';
-import MemoryGame from './MemoryGame';
-import VictoryLeapGame from './VictoryLeapGame';
-import MindBattleGame from './MindBattleGame';
-import { SOUNDS } from '../constants';
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useAppContext } from "../context/AppContext";
+import { Screen, BonusGameId } from "../types";
+import ActionButton from "../components/ActionButton";
+import AnimatedScreen from "../components/AnimatedScreen";
+import { useSound } from "../hooks/useSound";
+import confetti from "canvas-confetti";
+import IdentityBuilderGame from "./IdentityBuilderGame";
+import WordSearchGame from "./WordSearchGame";
+import MemoryGame from "./MemoryGame";
+import VictoryLeapGame from "./VictoryLeapGame";
+import MindBattleGame from "./MindBattleGame";
+import { SOUNDS } from "../constants";
 
-type BonusView = 'gratitude' | 'hub' | BonusGameId | 'reward';
+type BonusView = "gratitude" | "hub" | BonusGameId | "reward";
 
 type ShareData = {
   title: string;
@@ -32,63 +32,63 @@ const GAMES_CONFIG: Array<{
   };
 }> = [
   {
-    id: 'identityBuilder',
-    title: 'Firmando a Verdade',
-    description: 'Arraste verdades e mentiras para seus lugares.',
-    icon: 'shield-check',
+    id: "identityBuilder",
+    title: "Firmando a Verdade",
+    description: "Arraste verdades e mentiras para seus lugares.",
+    icon: "shield-check",
     colors: {
-      border: 'border-blue-700',
-      bg: 'bg-blue-900/40',
-      icon: 'text-cyan-400',
-      button: 'bg-cyan-600 hover:bg-cyan-500',
+      border: "border-blue-700",
+      bg: "bg-blue-900/40",
+      icon: "text-cyan-400",
+      button: "bg-cyan-600 hover:bg-cyan-500",
     },
   },
   {
-    id: 'wordSearch',
-    title: 'Encontrando a Verdade',
-    description: 'Ache palavras-chave da sua identidade.',
-    icon: 'search',
+    id: "wordSearch",
+    title: "Encontrando a Verdade",
+    description: "Ache palavras-chave da sua identidade.",
+    icon: "search",
     colors: {
-      border: 'border-teal-700',
-      bg: 'bg-teal-900/40',
-      icon: 'text-teal-400',
-      button: 'bg-teal-600 hover:bg-teal-500',
+      border: "border-teal-700",
+      bg: "bg-teal-900/40",
+      icon: "text-teal-400",
+      button: "bg-teal-600 hover:bg-teal-500",
     },
   },
   {
-    id: 'memory',
-    title: 'Memória da Verdade',
-    description: 'Combine versículos com suas verdades.',
-    icon: 'brain',
+    id: "memory",
+    title: "Memória da Verdade",
+    description: "Combine versículos com suas verdades.",
+    icon: "brain",
     colors: {
-      border: 'border-indigo-700',
-      bg: 'bg-indigo-900/40',
-      icon: 'text-indigo-400',
-      button: 'bg-indigo-600 hover:bg-indigo-500',
+      border: "border-indigo-700",
+      bg: "bg-indigo-900/40",
+      icon: "text-indigo-400",
+      button: "bg-indigo-600 hover:bg-indigo-500",
     },
   },
   {
-    id: 'victoryLeap',
-    title: 'Pulo da Vitória',
-    description: 'Pule nas verdades para chegar à vitória.',
-    icon: 'award',
+    id: "victoryLeap",
+    title: "Pulo da Vitória",
+    description: "Pule nas verdades para chegar à vitória.",
+    icon: "award",
     colors: {
-      border: 'border-amber-600',
-      bg: 'bg-amber-900/40',
-      icon: 'text-amber-400',
-      button: 'bg-amber-500 hover:bg-amber-400',
+      border: "border-amber-600",
+      bg: "bg-amber-900/40",
+      icon: "text-amber-400",
+      button: "bg-amber-500 hover:bg-amber-400",
     },
   },
   {
-    id: 'mindBattle',
-    title: 'Batalha da Mente',
-    description: 'Defenda seu coração das mentiras.',
-    icon: 'brain-circuit',
+    id: "mindBattle",
+    title: "Batalha da Mente",
+    description: "Defenda seu coração das mentiras.",
+    icon: "brain-circuit",
     colors: {
-      border: 'border-rose-700',
-      bg: 'bg-rose-900/40',
-      icon: 'text-rose-400',
-      button: 'bg-rose-600 hover:bg-rose-500',
+      border: "border-rose-700",
+      bg: "bg-rose-900/40",
+      icon: "text-rose-400",
+      button: "bg-rose-600 hover:bg-rose-500",
     },
   },
 ];
@@ -105,12 +105,12 @@ const BonusScreen: React.FC = () => {
 
   const completedBonusGamesSet = useMemo(
     () => new Set<BonusGameId>(completedBonusGames),
-    [completedBonusGames],
+    [completedBonusGames]
   );
 
-  const [currentView, setCurrentView] = useState<BonusView>('gratitude');
+  const [currentView, setCurrentView] = useState<BonusView>("gratitude");
   const shareableCardRef = useRef<HTMLDivElement>(null);
-  const [shareData, setShareData] = useState<ShareData>({ title: '', icon: '' });
+  const [shareData, setShareData] = useState<ShareData>({ title: "", icon: "" });
 
   const playSelectSound = useSound(SOUNDS.CLICK.id, 0.4);
   const playConfettiSound = useSound(SOUNDS.SUCCESS.id, 0.3);
@@ -123,7 +123,7 @@ const BonusScreen: React.FC = () => {
 
   const handleGameComplete = (gameId: BonusGameId) => {
     markBonusGameAsComplete(gameId);
-    setCurrentView('hub');
+    setCurrentView("hub");
   };
 
   const handleShare = async (title: string, icon: string) => {
@@ -135,45 +135,51 @@ const BonusScreen: React.FC = () => {
 
       try {
         const canvas = await (window as any).html2canvas(element, {
-          backgroundColor: '#111827',
+          backgroundColor: "#111827",
           scale: 2,
         });
 
         canvas.toBlob(async (blob: Blob | null) => {
           if (blob && navigator.share) {
-            const file = new File([blob], 'conquista-jogo.png', { type: 'image/png' });
+            const file = new File([blob], "conquista-jogo.png", {
+              type: "image/png",
+            });
             try {
               await navigator.share({
-                title: 'Conquista de Jogo - Identidade em Cristo',
+                title: "Conquista de Jogo - Identidade em Cristo",
                 text: `Eu completei o jogo "${title}" na jornada Identidade em Cristo!`,
                 files: [file],
               });
             } catch (err) {
-              console.error('Erro ao compartilhar:', err);
+              console.error("Erro ao compartilhar:", err);
             }
           } else {
-            const link = document.createElement('a');
-            link.download = 'conquista-jogo.png';
-            link.href = canvas.toDataURL('image/png');
+            const link = document.createElement("a");
+            link.download = "conquista-jogo.png";
+            link.href = canvas.toDataURL("image/png");
             link.click();
           }
-        }, 'image/png');
+        }, "image/png");
       } catch (error) {
-        console.error('Error generating shareable image:', error);
+        console.error("Error generating shareable image:", error);
       }
     }, 100);
   };
 
   const GratitudeView = () => (
     <div className="animate-fade-in">
-      <h1 className="text-3xl md:text-4xl font-bold mb-4">Uma Mensagem Especial para Você</h1>
+      <h1 className="text-3xl md:text-4xl font-bold mb-4">
+        Uma Mensagem Especial para Você
+      </h1>
       <p className="text-lg text-gray-300 mb-6">
-        Que alegria ver você chegar até aqui! Agradeço por dedicar seu tempo a esta jornada. Lembre-se, esta não é apenas informação; é uma transformação que ecoa na eternidade.
+        Que alegria ver você chegar até aqui! Agradeço por dedicar seu tempo a
+        esta jornada. Lembre-se, esta não é apenas informação; é uma
+        transformação que ecoa na eternidade.
       </p>
       <ActionButton
         onClick={() => {
           playSelectSound();
-          setCurrentView('hub');
+          setCurrentView("hub");
         }}
       >
         Ir para o Salão de Jogos
@@ -185,13 +191,17 @@ const BonusScreen: React.FC = () => {
     const allGamesCompleted = completedBonusGamesSet.size === GAMES_CONFIG.length;
     return (
       <div className="animate-fade-in">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">Salão de Jogos da Identidade</h1>
-        <p className="text-lg text-gray-300 mb-8">Escolha um jogo para reforçar o que aprendeu!</p>
+        <h1 className="text-3xl md:text-4xl font-bold mb-2">
+          Salão de Jogos da Identidade
+        </h1>
+        <p className="text-lg text-gray-300 mb-8">
+          Escolha um jogo para reforçar o que aprendeu!
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {GAMES_CONFIG.map((game) => {
             const isCompleted = completedBonusGamesSet.has(game.id);
-            const cardBorder = isCompleted ? 'border-green-500' : game.colors.border;
-            const iconColor = isCompleted ? 'text-green-400' : game.colors.icon;
+            const cardBorder = isCompleted ? "border-green-500" : game.colors.border;
+            const iconColor = isCompleted ? "text-green-400" : game.colors.icon;
 
             return (
               <div
@@ -199,7 +209,10 @@ const BonusScreen: React.FC = () => {
                 className={`group p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${cardBorder} ${game.colors.bg}`}
               >
                 <div className="flex items-center gap-3">
-                  <i data-lucide={game.icon} className={`w-8 h-8 ${iconColor}`}></i>
+                  <i
+                    data-lucide={game.icon}
+                    className={`w-8 h-8 ${iconColor}`}
+                  ></i>
                   <h2 className="text-xl font-bold">{game.title}</h2>
                   {isCompleted && (
                     <div className="ml-auto flex items-center gap-2">
@@ -208,13 +221,21 @@ const BonusScreen: React.FC = () => {
                         aria-label={`Compartilhar conquista do jogo ${game.title}`}
                         className="p-1 rounded-full hover:bg-white/20"
                       >
-                        <i data-lucide="share-2" className="w-5 h-5 text-cyan-300"></i>
+                        <i
+                          data-lucide="share-2"
+                          className="w-5 h-5 text-cyan-300"
+                        ></i>
                       </button>
-                      <i data-lucide="check-circle" className="w-6 h-6 text-green-400"></i>
+                      <i
+                        data-lucide="check-circle"
+                        className="w-6 h-6 text-green-400"
+                      ></i>
                     </div>
                   )}
                 </div>
-                <p className="text-sm text-gray-300 my-3 h-10">{game.description}</p>
+                <p className="text-sm text-gray-300 my-3 h-10">
+                  {game.description}
+                </p>
                 <button
                   onClick={() => {
                     playSelectSound();
@@ -222,7 +243,7 @@ const BonusScreen: React.FC = () => {
                   }}
                   className={`w-full text-white font-bold py-2 rounded-lg transition-colors ${game.colors.button}`}
                 >
-                  {isCompleted ? 'Jogar Novamente' : 'Jogar'}
+                  {isCompleted ? "Jogar Novamente" : "Jogar"}
                 </button>
               </div>
             );
@@ -230,11 +251,13 @@ const BonusScreen: React.FC = () => {
         </div>
         {allGamesCompleted && (
           <div className="mt-8">
-            <p className="text-xl font-bold text-yellow-300 mb-4">Todos os jogos concluídos! Você está pronto(a)!</p>
+            <p className="text-xl font-bold text-yellow-300 mb-4">
+              Todos os jogos concluídos! Você está pronto(a)!
+            </p>
             <ActionButton
               onClick={() => {
                 playSelectSound();
-                setCurrentView('reward');
+                setCurrentView("reward");
               }}
             >
               Receber Recompensa Final
@@ -246,9 +269,13 @@ const BonusScreen: React.FC = () => {
   };
 
   const RewardView: React.FC = () => {
-    const [choiceMade, setChoiceMade] = useState<'yes' | 'no' | null>(physicalRewardChoice);
+    const [choiceMade, setChoiceMade] = useState<"yes" | "no" | null>(
+      physicalRewardChoice
+    );
     const [showButtons, setShowButtons] = useState(!physicalRewardChoice);
-    const [showConfirmation, setShowConfirmation] = useState(!!physicalRewardChoice);
+    const [showConfirmation, setShowConfirmation] = useState(
+      !!physicalRewardChoice
+    );
 
     useEffect(() => {
       if (!physicalRewardChoice) {
@@ -257,7 +284,7 @@ const BonusScreen: React.FC = () => {
       }
     }, [physicalRewardChoice]);
 
-    const handleChoice = (choice: 'yes' | 'no') => {
+    const handleChoice = (choice: "yes" | "no") => {
       playSelectSound();
       setPhysicalRewardChoice(choice);
       setChoiceMade(choice);
@@ -267,26 +294,37 @@ const BonusScreen: React.FC = () => {
 
     return (
       <div className="animate-fade-in">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">Recompensa Bônus Final!</h1>
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          Recompensa Bônus Final!
+        </h1>
         <p className="text-xl text-gray-300 mb-8">
-          Deseja receber uma recompensa física especial (ex: adesivo) pelo correio?
+          Deseja receber uma recompensa física especial (ex: adesivo) pelo
+          correio?
         </p>
         {showButtons && (
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-10">
-            <ActionButton onClick={() => handleChoice('yes')} tooltip="Concordo em compartilhar dados de contato para o envio.">
+            <ActionButton
+              onClick={() => handleChoice("yes")}
+              tooltip="Concordo em compartilhar dados de contato para o envio."
+            >
               Sim, eu quero!
             </ActionButton>
-            <ActionButton onClick={() => handleChoice('no')}>Não, obrigado(a).</ActionButton>
+            <ActionButton onClick={() => handleChoice("no")}>
+              Não, obrigado(a).
+            </ActionButton>
           </div>
         )}
         {showConfirmation && (
           <div className="animate-fade-in-up mt-8">
             <p className="text-lg text-gray-200">
-              {choiceMade === 'yes'
-                ? 'Ótima escolha! Entraremos em contato para o envio.'
-                : 'Entendido! Suas recompensas espirituais são eternas!'}
+              {choiceMade === "yes"
+                ? "Ótima escolha! Entraremos em contato para o envio."
+                : "Entendido! Suas recompensas espirituais são eternas!"}
             </p>
-            <ActionButton onClick={() => navigateTo(Screen.Final)} className="mt-8">
+            <ActionButton
+              onClick={() => navigateTo(Screen.Final)}
+              className="mt-8"
+            >
               Continuar para o Final
             </ActionButton>
           </div>
@@ -297,21 +335,46 @@ const BonusScreen: React.FC = () => {
 
   const renderContent = () => {
     switch (currentView) {
-      case 'gratitude':
+      case "gratitude":
         return <GratitudeView />;
-      case 'hub':
+      case "hub":
         return <GameHub />;
-      case 'identityBuilder':
-        return <IdentityBuilderGame onComplete={() => handleGameComplete('identityBuilder')} onBack={() => setCurrentView('hub')} />;
-      case 'wordSearch':
-        return <WordSearchGame onComplete={() => handleGameComplete('wordSearch')} onBack={() => setCurrentView('hub')} />;
-      case 'memory':
-        return <MemoryGame onComplete={() => handleGameComplete('memory')} onBack={() => setCurrentView('hub')} />;
-      case 'victoryLeap':
-        return <VictoryLeapGame onComplete={() => handleGameComplete('victoryLeap')} onBack={() => setCurrentView('hub')} />;
-      case 'mindBattle':
-        return <MindBattleGame onComplete={() => handleGameComplete('mindBattle')} onBack={() => setCurrentView('hub')} />;
-      case 'reward':
+      case "identityBuilder":
+        return (
+          <IdentityBuilderGame
+            onComplete={() => handleGameComplete("identityBuilder")}
+            onBack={() => setCurrentView("hub")}
+          />
+        );
+      case "wordSearch":
+        return (
+          <WordSearchGame
+            onComplete={() => handleGameComplete("wordSearch")}
+            onBack={() => setCurrentView("hub")}
+          />
+        );
+      case "memory":
+        return (
+          <MemoryGame
+            onComplete={() => handleGameComplete("memory")}
+            onBack={() => setCurrentView("hub")}
+          />
+        );
+      case "victoryLeap":
+        return (
+          <VictoryLeapGame
+            onComplete={() => handleGameComplete("victoryLeap")}
+            onBack={() => setCurrentView("hub")}
+          />
+        );
+      case "mindBattle":
+        return (
+          <MindBattleGame
+            onComplete={() => handleGameComplete("mindBattle")}
+            onBack={() => setCurrentView("hub")}
+          />
+        );
+      case "reward":
         return <RewardView />;
       default:
         return <GratitudeView />;
@@ -320,18 +383,43 @@ const BonusScreen: React.FC = () => {
 
   return (
     <AnimatedScreen>
-      <div className="bg-gray-800 bg-opacity-70 backdrop-blur-sm p-8 md:p-12 rounded-2xl shadow-2xl max-w-4xl w-full text-white text-center border border-blue-700 min-h-[500px]">
-        {renderContent()}
+      <div className="w-full max-w-4xl mx-auto">
+        {/* 🔙 NOVO: botão para voltar para a jornada */}
+        <div className="flex items-center justify-between mb-3">
+          <button
+            type="button"
+            onClick={() => navigateTo(Screen.Study)}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-slate-600 bg-slate-900/70 text-xs text-slate-100 hover:bg-slate-800 hover:border-sky-400 transition"
+          >
+            <i data-lucide="arrow-left" className="w-4 h-4" />
+            <span>Voltar para a jornada</span>
+          </button>
+          <p className="text-[11px] text-slate-400 hidden sm:block">
+            Salão de jogos · reforçando a sua identidade em Cristo
+          </p>
+        </div>
+
+        <div className="bg-gray-800 bg-opacity-70 backdrop-blur-sm p-8 md:p-12 rounded-2xl shadow-2xl w-full text-white text-center border border-blue-700 min-h-[500px]">
+          {renderContent()}
+        </div>
       </div>
+
       <div
         ref={shareableCardRef}
         className="fixed top-0 left-0 -z-10 p-8 bg-gray-900 text-white w-[400px]"
-        style={{ visibility: 'hidden' }}
+        style={{ visibility: "hidden" }}
       >
         <div className="border-4 border-cyan-400 p-6 rounded-lg text-center bg-gradient-to-br from-gray-900 to-blue-900">
-          <i data-lucide={shareData.icon ? shareData.icon.toLowerCase() : ''} className="w-16 h-16 mx-auto mb-4 text-yellow-400"></i>
+          <i
+            data-lucide={
+              shareData.icon ? shareData.icon.toLowerCase() : ""
+            }
+            className="w-16 h-16 mx-auto mb-4 text-yellow-400"
+          ></i>
           <h2 className="text-2xl font-bold mb-2">Jogo Concluído!</h2>
-          <p className="text-lg mb-4 text-gray-300">{userName} venceu o desafio:</p>
+          <p className="text-lg mb-4 text-gray-300">
+            {userName} venceu o desafio:
+          </p>
           <h3 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300 mb-6">
             {shareData.title}
           </h3>

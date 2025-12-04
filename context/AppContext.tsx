@@ -1,6 +1,7 @@
 import { addCommunityPost, listenToPosts } from "../firebase/postsService";
 
-import React, {
+import React,
+{
   createContext,
   useState,
   useContext,
@@ -9,9 +10,6 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-
-// Se você não estiver mais usando o GoogleGenAI, pode remover essa importação.
-// import { GoogleGenAI, Type } from "@google/genai";
 
 import {
   Screen,
@@ -22,6 +20,9 @@ import {
   ParticipantSummary,
   StageSnapshot,
   BonusGameId,
+  Medal,
+  LevelDefinition,
+  UserProfile,
 } from "../types";
 import { getStagesData } from "../constants";
 
@@ -31,6 +32,15 @@ import { saveJourney, JourneyDocument } from "../firebase/journeyService";
 const LOCAL_STORAGE_KEY = "identidadeCristoProgress";
 const USER_STORAGE_KEY = "identidadeCristoUser";
 const ADMIN_PARTICIPANTS_KEY = "identidadeCristoParticipants";
+
+// 🔹 Fila offline de posts
+const OFFLINE_QUEUE_KEY = "identidadeCristoOfflineQueue";
+
+interface OfflineQueuedPost {
+  tempId: number;
+  message: string;
+  createdAt: string;
+}
 
 interface UserData {
   userId: string | null;
@@ -91,9 +101,131 @@ interface AppContextType extends AppState {
   exitAdmin: () => void;
   markBonusGameAsComplete: (gameId: BonusGameId) => void;
   setPhysicalRewardChoice: (choice: "yes" | "no" | null) => void;
+
+  // Gamificação
+  xp: number;
+  level: number;
+  levelTitle: string;
+  medals: Medal[];
+  userProfile: UserProfile | null;
+
+  // Offline
+  isOnline: boolean;
+  offlineQueuedPostsCount: number;
+  syncOfflineQueuedPosts: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
+
+// --------- GAMIFICAÇÃO BÁSICA (somente cálculo em memória) ---------
+
+const LEVELS: LevelDefinition[] = [
+  { level: 1, minXp: 0, title: "Filho Amado" },
+  { level: 2, minXp: 100, title: "Discípulo em Crescimento" },
+  { level: 3, minXp: 250, title: "Reformador da Mente" },
+  { level: 4, minXp: 450, title: "Influenciador de Geração" },
+  { level: 5, minXp: 700, title: "Embaixador de Cristo" },
+];
+
+const MEDALS_BASE: Medal[] = [
+  {
+    id: "first_stage",
+    name: "Primeiro Passo",
+    description: "Concluiu a primeira etapa da jornada.",
+    icon: "🥇",
+  },
+  {
+    id: "journey_completed",
+    name: "Jornada Concluída",
+    description: "Concluiu todas as etapas do estudo.",
+    icon: "🏁",
+  },
+  {
+    id: "high_score",
+    name: "Fogo no Quiz",
+    description: "Alcançou 80% ou mais da pontuação máxima.",
+    icon: "🔥",
+  },
+  {
+    id: "bonus_master",
+    name: "Caçador de Bônus",
+    description: "Completou pelo menos 3 jogos bônus.",
+    icon: "🎮",
+  },
+];
+
+const calculateXpFromJourney = (
+  stageProgress: Record<number, StageProgress>,
+  completedBonusGames: Set<BonusGameId>
+): number => {
+  const baseScore = Object.values(stageProgress).reduce<number>(
+    (acc, s) => acc + (s as StageProgress).score,
+    0
+  );
+
+  const completedStages = Object.values(stageProgress).filter(
+    (s) => (s as StageProgress).completed
+  ).length;
+
+  const bonusXp = completedBonusGames.size * 20;
+
+  // Fórmula simples: pontos do quiz + bônus por etapa concluída + bônus por jogos
+  return baseScore + completedStages * 10 + bonusXp;
+};
+
+const getLevelForXp = (xp: number): LevelDefinition => {
+  let current = LEVELS[0];
+  for (const lvl of LEVELS) {
+    if (xp >= lvl.minXp) {
+      current = lvl;
+    } else {
+      break;
+    }
+  }
+  return current;
+};
+
+const getEarnedMedals = (
+  stageProgress: Record<number, StageProgress>,
+  totalScore: number,
+  completedBonusGames: Set<BonusGameId>,
+  totalStagesAvailable: number
+): Medal[] => {
+  const medals: Medal[] = [];
+
+  const completedStages = Object.values(stageProgress).filter(
+    (s) => (s as StageProgress).completed
+  ).length;
+
+  const maxPossibleScore = totalStagesAvailable * 100; // suposição: 100 pts por etapa
+
+  const hasStage1Completed = (stageProgress[1] as StageProgress | undefined)
+    ?.completed;
+
+  if (hasStage1Completed) {
+    const m = MEDALS_BASE.find((m) => m.id === "first_stage");
+    if (m) medals.push(m);
+  }
+
+  if (completedStages === totalStagesAvailable && totalStagesAvailable > 0) {
+    const m = MEDALS_BASE.find((m) => m.id === "journey_completed");
+    if (m) medals.push(m);
+  }
+
+  if (maxPossibleScore > 0 && totalScore / maxPossibleScore >= 0.8) {
+    const m = MEDALS_BASE.find((m) => m.id === "high_score");
+    if (m) medals.push(m);
+  }
+
+  if (completedBonusGames.size >= 3) {
+    const m = MEDALS_BASE.find((m) => m.id === "bonus_master");
+    if (m) medals.push(m);
+  }
+
+  return medals;
+};
+
+// -------------------------------------------------------- //
 
 const loadInitialState = (): AppState => {
   const savedProgress = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -184,15 +316,86 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     initialState.totalTimeMinutes ?? null
   );
 
+  // 🔹 Estado offline
+  const [isOnline, setIsOnline] = useState<boolean>(
+    typeof navigator !== "undefined" ? navigator.onLine : true
+  );
+  const [offlineQueuedPosts, setOfflineQueuedPosts] = useState<
+    OfflineQueuedPost[]
+  >(() => {
+    try {
+      const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const stagesData = useMemo(() => getStagesData(), []);
 
-  // 🔥 totalScore tipado corretamente
+  // totalScore tipado corretamente
   const totalScore = useMemo(() => {
     return Object.values(stageProgress).reduce<number>(
       (acc, stage) => acc + (stage as StageProgress).score,
       0
     );
   }, [stageProgress]);
+
+  // --------- Gamificação derivada ---------
+
+  const xp = useMemo(
+    () => calculateXpFromJourney(stageProgress, completedBonusGames),
+    [stageProgress, completedBonusGames]
+  );
+
+  const currentLevelDef = useMemo(() => getLevelForXp(xp), [xp]);
+
+  const medals = useMemo(
+    () =>
+      getEarnedMedals(
+        stageProgress,
+        totalScore,
+        completedBonusGames,
+        stagesData.length
+      ),
+    [stageProgress, totalScore, completedBonusGames, stagesData.length]
+  );
+
+  const userProfile: UserProfile | null = useMemo(() => {
+    if (!userId && !userName) return null;
+
+    const completedStagesCount = Object.values(stageProgress).filter(
+      (s) => (s as StageProgress).completed
+    ).length;
+
+    return {
+      userId: userId ?? "guest",
+      name: userName || "Convidado",
+      birthDate,
+      level: currentLevelDef.level,
+      xp,
+      medals: medals.map((m) => m.id),
+      totalScore,
+      completedStages: completedStagesCount,
+      totalStages: stagesData.length,
+      journeyStartAt,
+      completedAt,
+      totalTimeMinutes,
+    } as unknown as UserProfile; // garante compat em caso de tipos diferentes
+  }, [
+    userId,
+    userName,
+    birthDate,
+    currentLevelDef.level,
+    xp,
+    medals,
+    totalScore,
+    stageProgress,
+    stagesData.length,
+    journeyStartAt,
+    completedAt,
+    totalTimeMinutes,
+  ]);
 
   // Gera userId local se não existir
   const ensureUserId = useCallback(
@@ -205,6 +408,58 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     },
     [userId]
   );
+
+  // 🔹 Sincronizar fila offline -> Firestore
+  const syncOfflineQueuedPosts = useCallback(async () => {
+    if (!userId || !userName || offlineQueuedPosts.length === 0) return;
+
+    const toSync = [...offlineQueuedPosts];
+
+    for (const item of toSync) {
+      try {
+        await addCommunityPost(userId, userName, item.message);
+      } catch (error) {
+        console.error("Erro ao sincronizar post offline:", error);
+        // se falhar, mantém o restante na fila
+        return;
+      }
+    }
+
+    // se tudo deu certo, limpa fila
+    setOfflineQueuedPosts([]);
+  }, [offlineQueuedPosts, userId, userName]);
+
+  // 🔹 Listener de online/offline
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      syncOfflineQueuedPosts();
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [syncOfflineQueuedPosts]);
+
+  // 🔹 Persistir fila offline no localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        OFFLINE_QUEUE_KEY,
+        JSON.stringify(offlineQueuedPosts)
+      );
+    } catch (error) {
+      console.error("Erro ao salvar fila offline:", error);
+    }
+  }, [offlineQueuedPosts]);
 
   // Sincronizar jornada com Firestore
   useEffect(() => {
@@ -358,7 +613,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     []
   );
 
-  // 🔥 Ouvir posts em tempo real do Firestore
+  // Ouvir posts em tempo real do Firestore
   useEffect(() => {
     setLoadingPosts(true);
 
@@ -458,10 +713,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       isUserPost: true,
       comments: [],
     };
+
+    // já aparece no mural, mesmo offline
     setPosts((prev) => [newPost, ...prev]);
 
+    // se estiver offline, entra na fila para sincronizar depois
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      setOfflineQueuedPosts((prev) => [
+        ...prev,
+        {
+          tempId: newPost.id,
+          message,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+      return;
+    }
+
+    // se estiver online, tenta mandar pro Firestore
     addCommunityPost(userId, userName, message).catch((error) => {
       console.error("Erro ao salvar post no Firestore:", error);
+      // se falhar mesmo online, joga para fila offline
+      setOfflineQueuedPosts((prev) => [
+        ...prev,
+        {
+          tempId: newPost.id,
+          message,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
     });
   };
 
@@ -629,6 +909,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     markBonusGameAsComplete,
     physicalRewardChoice,
     setPhysicalRewardChoice,
+
+    // Gamificação exposta
+    xp,
+    level: currentLevelDef.level,
+    levelTitle: currentLevelDef.title,
+    medals,
+    userProfile,
+
+    // Offline exposto para o app
+    isOnline,
+    offlineQueuedPostsCount: offlineQueuedPosts.length,
+    syncOfflineQueuedPosts,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
