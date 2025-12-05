@@ -28,6 +28,7 @@ export type BonusGameId =
   | "victoryLeap"
   | "mindBattle";
 
+
 // Perguntas dos quizzes
 export interface QuizQuestion {
   question: string;

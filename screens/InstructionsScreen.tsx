@@ -1,9 +1,8 @@
-
-import React, { useEffect } from 'react';
-import { useAppContext } from '../context/AppContext';
-import { Screen } from '../types';
-import ActionButton from '../components/ActionButton';
-import AnimatedScreen from '../components/AnimatedScreen';
+import React, { useEffect } from "react";
+import { useAppContext } from "../context/AppContext";
+import { Screen } from "../types";
+import ActionButton from "../components/ActionButton";
+import AnimatedScreen from "../components/AnimatedScreen";
 
 const InstructionsScreen: React.FC = () => {
   const { userName, navigateTo } = useAppContext();
@@ -20,91 +19,126 @@ const InstructionsScreen: React.FC = () => {
 
   const instructions = [
     {
-      icon: 'film',
-      title: 'Assista aos Vídeos',
-      text: 'Mergulhe em um vídeo de estudo em cada uma das 6 etapas da jornada.',
-      color: 'from-blue-500/80 to-blue-800/80',
-      iconColor: 'text-blue-300'
+      icon: "film",
+      title: "Assista aos Vídeos",
+      text: "Mergulhe em um vídeo de estudo em cada uma das 6 etapas da jornada.",
+      color: "from-blue-500/80 to-blue-800/80",
+      iconColor: "text-blue-300",
     },
     {
-      icon: 'help-circle',
-      title: 'Teste seu Conhecimento',
-      text: 'Responda a um quiz de 10 perguntas para fixar o que você aprendeu.',
-      color: 'from-teal-500/80 to-teal-800/80',
-      iconColor: 'text-teal-300'
+      icon: "help-circle",
+      title: "Teste seu Conhecimento",
+      text: "Responda a um quiz de 10 perguntas para fixar o que você aprendeu.",
+      color: "from-teal-500/80 to-teal-800/80",
+      iconColor: "text-teal-300",
     },
     {
-      icon: 'cross',
-      title: 'Medite na Palavra',
-      text: 'Aprofunde-se em uma reflexão bíblica cuidadosamente selecionada para cada tema.',
-      color: 'from-purple-500/80 to-purple-800/80',
-      iconColor: 'text-purple-300'
+      icon: "cross",
+      title: "Medite na Palavra",
+      text: "Aprofunde-se em uma reflexão bíblica cuidadosamente selecionada para cada tema.",
+      color: "from-purple-500/80 to-purple-800/80",
+      iconColor: "text-purple-300",
     },
     {
-      icon: 'notebook-text',
-      title: 'Diário Pessoal',
-      text: 'Anote seus pensamentos e o que Deus falou com você em um diário de reflexão.',
-      color: 'from-indigo-500/80 to-indigo-800/80',
-      iconColor: 'text-indigo-300'
+      icon: "notebook-text",
+      title: "Diário Pessoal",
+      text: "Anote seus pensamentos e o que Deus falou com você em um Diário Espiritual exclusivo dentro do app.",
+      color: "from-indigo-500/80 to-indigo-800/80",
+      iconColor: "text-indigo-300",
     },
     {
-      icon: 'gamepad-2',
-      title: 'Explore os Jogos Bônus',
-      text: 'Ao terminar a jornada principal, visite o Salão de Jogos e fortaleça suas verdades em cinco mini-jogos temáticos.',
-      color: 'from-amber-500/80 to-amber-800/80',
-      iconColor: 'text-amber-300'
+      icon: "gamepad-2",
+      title: "Explore os Jogos Bônus",
+      text: "Ao terminar a jornada principal, visite o Salão de Jogos e fortaleça suas verdades em vários mini-jogos temáticos.",
+      color: "from-amber-500/80 to-amber-800/80",
+      iconColor: "text-amber-300",
     },
     {
-      icon: 'share-2',
-      title: 'Compartilhe Conquistas',
-      text: 'Concluiu um jogo bônus? Gere um cartão comemorativo e compartilhe com amigos diretamente do app.',
-      color: 'from-cyan-500/80 to-cyan-800/80',
-      iconColor: 'text-cyan-300'
+      icon: "file-text",
+      title: "Identity Builder – Arquivos",
+      text: "No mini‑game especial, gere 6+ declarações da sua identidade em Cristo, escreva a sua frase pessoal e salve/compartilhe o texto.",
+      color: "from-violet-500/80 to-violet-800/80",
+      iconColor: "text-violet-300",
     },
     {
-      icon: 'trophy',
-      title: 'Receba Recompensas',
-      text: 'Celebre suas vitórias espirituais e escolha, se quiser, receber uma recompensa física especial pelo correio.',
-      color: 'from-yellow-500/80 to-yellow-800/80',
-      iconColor: 'text-yellow-300'
+      icon: "book-open-check",
+      title: "Diário Espiritual",
+      text: "Suas declarações geradas também podem virar uma entrada automática no Diário Espiritual, para você revisitar o que Deus ministrou.",
+      color: "from-emerald-500/80 to-emerald-800/80",
+      iconColor: "text-emerald-200",
     },
     {
-      icon: 'messages-square',
-      title: 'Mural da Comunidade',
-      text: 'Participe do nosso Mural, compartilhe suas reflexões e abençoe outros jovens.',
-      color: 'from-pink-500/80 to-pink-800/80',
-      iconColor: 'text-pink-300'
+      icon: "share-2",
+      title: "Compartilhe Conquistas",
+      text: "Concluiu um jogo bônus? Gere um cartão comemorativo ou compartilhe suas vitórias e declarações diretamente do app.",
+      color: "from-cyan-500/80 to-cyan-800/80",
+      iconColor: "text-cyan-300",
     },
     {
-      icon: 'infinity',
-      title: 'Refaça a Jornada',
-      text: 'A cada nova jornada, um quiz com perguntas diferentes testará seus conhecimentos.',
-      color: 'from-green-500/80 to-green-800/80',
-      iconColor: 'text-green-300'
+      icon: "trophy",
+      title: "Receba Recompensas",
+      text: "Celebre suas vitórias espirituais e escolha, se quiser, receber uma recompensa física especial pelo correio.",
+      color: "from-yellow-500/80 to-yellow-800/80",
+      iconColor: "text-yellow-300",
+    },
+    {
+      icon: "sparkles",
+      title: "Pontos, Níveis e Medalhas",
+      text: "Ao avançar na jornada e nos jogos bônus, você ganha pontuação, sobe de nível e desbloqueia medalhas que refletem sua caminhada em Cristo.",
+      color: "from-sky-500/80 to-sky-800/80",
+      iconColor: "text-sky-200",
+    },
+    {
+      icon: "messages-square",
+      title: "Mural da Comunidade",
+      text: "Participe do nosso Mural, compartilhe suas reflexões e abençoe outros jovens. Mesmo offline, seus posts são guardados e enviados depois.",
+      color: "from-pink-500/80 to-pink-800/80",
+      iconColor: "text-pink-300",
+    },
+    {
+      icon: "infinity",
+      title: "Refaça a Jornada",
+      text: "A cada nova jornada, um quiz com perguntas diferentes testará seus conhecimentos e aprofundará ainda mais sua identidade em Cristo.",
+      color: "from-green-500/80 to-green-800/80",
+      iconColor: "text-green-300",
     },
   ];
 
   return (
     <AnimatedScreen>
       <div className="bg-gray-800 bg-opacity-70 backdrop-blur-sm p-8 rounded-2xl shadow-2xl max-w-5xl w-full text-white text-center border border-blue-700">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-fade-in-down bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">Olá, {userName}!</h1>
-        <p className="text-lg text-gray-300 mb-10 animate-fade-in-down" style={{ animationDelay: '150ms' }}>
-          Bem-vindo(a) à sua jornada para descobrir sua verdadeira identidade. Veja como funciona:
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-fade-in-down bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">
+          Olá, {userName}!
+        </h1>
+        <p
+          className="text-lg text-gray-300 mb-10 animate-fade-in-down"
+          style={{ animationDelay: "150ms" }}
+        >
+          Bem-vindo(a) à sua jornada para descobrir sua verdadeira identidade em Cristo. Veja como o app funciona e aproveite todos os recursos:
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {instructions.map((item, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className={`group bg-gradient-to-br ${item.color} p-6 rounded-xl flex flex-col items-center text-center transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl animate-fade-in-up border border-white/10`}
               style={{ animationDelay: `${200 + index * 100}ms` }}
             >
-              <i data-lucide={item.icon} className={`w-12 h-12 mb-4 ${item.iconColor} transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6`}></i>
-              <h3 className="text-lg font-bold mb-2 text-white">{item.title}</h3>
+              <i
+                data-lucide={item.icon}
+                className={`w-12 h-12 mb-4 ${item.iconColor} transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6`}
+              ></i>
+              <h3 className="text-lg font-bold mb-2 text-white">
+                {item.title}
+              </h3>
               <p className="text-sm text-gray-300 flex-grow">{item.text}</p>
             </div>
           ))}
         </div>
-        <ActionButton onClick={() => navigateTo(Screen.Study)} className="mt-12 animate-fade-in-up" style={{ animationDelay: `${300 + instructions.length * 100}ms` }}>
+        <ActionButton
+          onClick={() => navigateTo(Screen.Study)}
+          className="mt-12 animate-fade-in-up"
+          style={{ animationDelay: `${300 + instructions.length * 100}ms` }}
+        >
           Estou Pronto!
         </ActionButton>
       </div>

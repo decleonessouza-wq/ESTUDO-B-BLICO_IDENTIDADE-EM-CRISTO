@@ -48,18 +48,18 @@ export default {
   },
   // 2. SAFELIST: Força o Tailwind a gerar todas as classes necessárias
   safelist: [
-    // Pattern para cores principais (bg, text, border, ring)
+    // Cores principais (bg, text, border, ring)
+    // Ex.: bg-stage-1, text-stage-2-light, border-stage-3-dark, ring-stage-4, etc.
     {
-      pattern: /(text|bg|border|ring)-(stage)-(1|2|3|4|5|6)(-(light|dark))?/,
+      pattern: /(text|bg|border|ring)-stage-(1|2|3|4|5|6)(-(light|dark))?/,
     },
-    // Pattern para o foco do textarea (focus:ring-stage-1, etc.)
+    // Gradientes para barra de progresso / backgrounds
+    // Ex.: from-stage-1, to-stage-1-light, from-stage-3-dark, etc.
     {
-      pattern: /focus:ring-(stage)-(1|2|3|4|5|6)(-(light|dark))?/,
+      pattern: /(from|to)-stage-(1|2|3|4|5|6)(-(light|dark))?/,
     },
-    // Pattern para a barra de progresso (gradiente: from-stage-1, to-stage-1-light, etc.)
-    {
-      pattern: /(from|to)-(stage)-(1|2|3|4|5|6)(-(light|dark))?/,
-    },
+    // Obs.: variants como "focus:" serão geradas automaticamente.
+    // Não precisamos colocar "focus:" no pattern.
   ],
   plugins: [],
 };
