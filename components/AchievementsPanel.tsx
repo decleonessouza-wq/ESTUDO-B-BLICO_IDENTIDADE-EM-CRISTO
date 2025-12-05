@@ -46,7 +46,8 @@ const AchievementsPanel: React.FC = () => {
       totalStages > 0 && completedStages === totalStages;
 
     const allBonusDone =
-      completedBonusGames && completedBonusGames.length > 0 &&
+      completedBonusGames &&
+      completedBonusGames.length > 0 &&
       completedBonusGames.length >= 5; // qtde de jogos bônus
 
     const userPosts = posts.filter((p) => p.isUserPost);
@@ -254,10 +255,6 @@ const AchievementsPanel: React.FC = () => {
               Continue avançando: cada etapa, jogo bônus e partilha no mural
               pode desbloquear novas conquistas. 🏆
             </p>
-
-            <div className="mt-1 text-[9px] text-slate-500 text-right">
-              Dev tools: OFF
-            </div>
           </div>
         )}
       </div>

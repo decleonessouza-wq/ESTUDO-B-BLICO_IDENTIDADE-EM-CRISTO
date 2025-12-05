@@ -20,10 +20,11 @@ import SpiritualDiaryScreen from "./screens/SpiritualDiaryScreen";
 import WeeklyChallengesScreen from "./screens/WeeklyChallengesScreen";
 import PrayerScreen from "./screens/PrayerScreen";
 
-
-
 // 🔧 chave de flag no localStorage para modo dev
 const DEV_TOOLS_FLAG_KEY = "identidadeDevTools";
+
+// 🔧 detecta se é build de produção (Vite)
+const IS_PROD = import.meta.env.PROD === true;
 
 interface DevTestsPanelProps {
   onClose: () => void;
@@ -163,6 +164,7 @@ const AppOverlay: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   } = useAppContext();
 
   const [isDevToolsEnabled, setIsDevToolsEnabled] = useState<boolean>(() => {
+    if (IS_PROD) return false; // 🔒 nunca liga em produção
     try {
       return localStorage.getItem(DEV_TOOLS_FLAG_KEY) === "1";
     } catch {
@@ -171,6 +173,7 @@ const AppOverlay: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   });
 
   const toggleDevTools = () => {
+    if (IS_PROD) return; // 🔒 ignora clique em produção
     setIsDevToolsEnabled((prev) => {
       const next = !prev;
       try {
@@ -194,18 +197,20 @@ const AppOverlay: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <>
       <div className="relative min-h-screen bg-gradient-to-b from-[#020617] via-[#020617] to-[#020617] text-white">
-        {/* Badge de Dev no cantinho */}
-        <DeveloperModeBadge
-          enabled={isDevToolsEnabled}
-          toggle={toggleDevTools}
-        />
+        {/* Badge de Dev no cantinho – só no ambiente de desenvolvimento */}
+        {!IS_PROD && (
+          <DeveloperModeBadge
+            enabled={isDevToolsEnabled}
+            toggle={toggleDevTools}
+          />
+        )}
 
         {/* Conteúdo real do app */}
         <main className="min-h-screen flex flex-col">{children}</main>
       </div>
 
-      {/* Painel flutuante de dev, só se a flag estiver ligada */}
-      {isDevToolsEnabled && (
+      {/* Painel flutuante de dev, só se a flag estiver ligada e não for produção */}
+      {!IS_PROD && isDevToolsEnabled && (
         <DevTestsPanel
           onClose={toggleDevTools}
           onRunTest={handleRunTest}

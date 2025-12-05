@@ -1,7 +1,7 @@
+// context/AppContext.tsx
 import { addCommunityPost, listenToPosts } from "../firebase/postsService";
 
-import React,
-{
+import React, {
   createContext,
   useState,
   useContext,
@@ -64,6 +64,9 @@ interface AppState {
   totalTimeMinutes: number | null;
   completedBonusGames: BonusGameId[];
   physicalRewardChoice: "yes" | "no" | null;
+
+  // 🔊 preferências / estado de áudio
+  isAudioUnlocked: boolean;
 }
 
 interface AppContextType extends AppState {
@@ -101,6 +104,9 @@ interface AppContextType extends AppState {
   exitAdmin: () => void;
   markBonusGameAsComplete: (gameId: BonusGameId) => void;
   setPhysicalRewardChoice: (choice: "yes" | "no" | null) => void;
+
+  // 👉 NOVO: avançar para próxima etapa após jogos/relatórios
+  goToNextStage: () => void;
 
   // Gamificação
   xp: number;
@@ -268,6 +274,8 @@ const loadInitialState = (): AppState => {
     totalTimeMinutes: progressData.totalTimeMinutes ?? null,
     completedBonusGames: progressData.completedBonusGames || [],
     physicalRewardChoice: progressData.physicalRewardChoice ?? null,
+    // 🔊 carrega estado de áudio salvo (default = false)
+    isAudioUnlocked: progressData.isAudioUnlocked ?? false,
   };
 };
 
@@ -293,7 +301,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   );
   const [posts, setPosts] = useState<Post[]>(initialState.posts);
   const [loadingPosts, setLoadingPosts] = useState(false);
-  const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
+
+  // 🔊 agora começa usando o valor carregado do localStorage
+  const [isAudioUnlocked, setIsAudioUnlocked] = useState<boolean>(
+    initialState.isAudioUnlocked ?? false
+  );
   const [bgmUrls, setBgmUrls] = useState<string[]>([]);
   const [completedBonusGames, setCompletedBonusGames] = useState<
     Set<BonusGameId>
@@ -369,6 +381,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     ).length;
 
     return {
+      // esses campos podem não existir em UserProfile atual,
+      // por isso usamos cast para manter compatibilidade
       userId: userId ?? "guest",
       name: userName || "Convidado",
       birthDate,
@@ -381,7 +395,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       journeyStartAt,
       completedAt,
       totalTimeMinutes,
-    } as unknown as UserProfile; // garante compat em caso de tipos diferentes
+    } as unknown as UserProfile;
   }, [
     userId,
     userName,
@@ -521,6 +535,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       totalTimeMinutes,
       completedBonusGames: Array.from(completedBonusGames),
       physicalRewardChoice,
+      // 🔊 salva também o estado atual do áudio
+      isAudioUnlocked,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
   }, [
@@ -535,6 +551,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     totalTimeMinutes,
     completedBonusGames,
     physicalRewardChoice,
+    isAudioUnlocked,
   ]);
 
   // Salvar dados de "auth" local
@@ -701,6 +718,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, [isAudioUnlocked]);
 
+  // 🔊 NOVO: desbloquear áudio na primeira interação do usuário,
+  // mesmo que ele volte direto para uma etapa já em andamento.
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      if (!isAudioUnlocked) {
+        setIsAudioUnlocked(true);
+      }
+    };
+
+    window.addEventListener("pointerdown", handleFirstInteraction);
+    window.addEventListener("keydown", handleFirstInteraction);
+
+    return () => {
+      window.removeEventListener("pointerdown", handleFirstInteraction);
+      window.removeEventListener("keydown", handleFirstInteraction);
+    };
+  }, [isAudioUnlocked]);
+
   const addPost = (message: string) => {
     if (!userId || !userName) return;
 
@@ -787,9 +822,43 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     setTotalTimeMinutes(null);
     setCompletedBonusGames(new Set());
     setPhysicalRewardChoiceState(null);
+    setIsAudioUnlocked(false);
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     navigateTo(Screen.Welcome);
   };
+
+  // 👉 NOVO: avançar para a próxima etapa ainda não concluída
+  const goToNextStage = useCallback(() => {
+    setCurrentStageId((prevId) => {
+      const total = stagesData.length;
+      let nextId = prevId;
+
+      // tenta achar a próxima etapa não concluída depois da atual
+      for (let i = prevId + 1; i <= total; i++) {
+        const prog = stageProgress[i];
+        if (!prog || !prog.completed) {
+          nextId = i;
+          break;
+        }
+      }
+
+      // se não achou nada depois, tenta desde o início
+      if (nextId === prevId) {
+        for (let i = 1; i <= total; i++) {
+          const prog = stageProgress[i];
+          if (!prog || !prog.completed) {
+            nextId = i;
+            break;
+          }
+        }
+      }
+
+      return nextId;
+    });
+
+    setCurrentScreen(Screen.Study);
+    window.scrollTo(0, 0);
+  }, [stageProgress, stagesData.length]);
 
   // Snapshot para painel do admin (localStorage)
   useEffect(() => {
@@ -921,6 +990,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     isOnline,
     offlineQueuedPostsCount: offlineQueuedPosts.length,
     syncOfflineQueuedPosts,
+
+    // 👉 novo helper
+    goToNextStage,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

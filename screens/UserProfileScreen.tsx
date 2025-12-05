@@ -5,6 +5,21 @@ import { useAppContext } from "../context/AppContext";
 import { Screen, UserProfile, StageProgress } from "../types";
 import { useUserProfile } from "../hooks/useUserProfile";
 
+// 🔹 Perfil “vazio” seguro para quando ainda não carregou do Firebase/local
+const createEmptyProfile = (): UserProfile => ({
+  favoriteVerse: "",
+  favoriteMusicStyle: "",
+  churchOrGroup: "",
+  spiritualTitle: "",
+  avatarDataUrl: null,
+  totalScore: 0,
+  level: 1,
+  nextLevelScore: 200,
+  medals: [],
+  streakDays: 0,
+  createdAt: new Date().toISOString(),
+});
+
 const UserProfileScreen: React.FC = () => {
   const {
     userName,
@@ -17,27 +32,22 @@ const UserProfileScreen: React.FC = () => {
 
   const { profile, updateProfile } = useUserProfile();
 
-  const [localProfile, setLocalProfile] = useState<UserProfile>(profile);
+  // garante que nunca será null/undefined
+  const [localProfile, setLocalProfile] = useState<UserProfile>(
+    profile ?? createEmptyProfile()
+  );
 
   useEffect(() => {
-    setLocalProfile(profile);
+    // sempre que o profile do hook mudar, atualiza o local
+    setLocalProfile(profile ?? createEmptyProfile());
   }, [profile]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if ((window as any).lucide) {
-        (window as any).lucide.createIcons();
-      }
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleFieldChange = <K extends keyof UserProfile>(
     field: K,
     value: UserProfile[K]
   ) => {
     setLocalProfile((prev) => ({
-      ...prev,
+      ...(prev ?? createEmptyProfile()),
       [field]: value,
     }));
   };
@@ -45,11 +55,14 @@ const UserProfileScreen: React.FC = () => {
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const reader = new FileReader();
+
     reader.onloadend = () => {
-      const result = reader.result?.toString() || null;
+      const result = typeof reader.result === "string" ? reader.result : null;
       handleFieldChange("avatarDataUrl", result);
     };
+
     reader.readAsDataURL(file);
   };
 
@@ -70,18 +83,25 @@ const UserProfileScreen: React.FC = () => {
   const nextLevelScore = level * XP_PER_LEVEL;
 
   const handleSave = () => {
+    // protege se profile ainda não estiver carregado
+    const medals = profile?.medals ?? [];
+    const streakDays = profile?.streakDays ?? 0;
+
     updateProfile({
       ...localProfile,
       totalScore,
       level,
       nextLevelScore,
-      // preserva medalhas e streak já existentes
-      medals: profile.medals,
-      streakDays: profile.streakDays,
+      medals,
+      streakDays,
     });
   };
 
   const displayName = userName || "Participante";
+  const firstLetter =
+    displayName && displayName.trim().length > 0
+      ? displayName.trim()[0].toUpperCase()
+      : "?";
 
   return (
     <AnimatedScreen>
@@ -122,10 +142,9 @@ const UserProfileScreen: React.FC = () => {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <i
-                      data-lucide="user"
-                      className="w-10 h-10 text-slate-400"
-                    />
+                    <div className="h-full w-full flex items-center justify-center text-2xl font-semibold text-slate-300">
+                      {firstLetter}
+                    </div>
                   )}
                 </div>
                 <label className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[10px] px-2 py-0.5 rounded-full bg-cyan-600 text-white cursor-pointer border border-cyan-300">
@@ -154,9 +173,7 @@ const UserProfileScreen: React.FC = () => {
 
             <div className="flex-1 grid grid-cols-2 gap-2 text-xs">
               <div className="bg-slate-800/80 rounded-xl p-2 border border-sky-500/50 text-center">
-                <p className="text-[10px] text-slate-400 uppercase">
-                  Nível
-                </p>
+                <p className="text-[10px] text-slate-400 uppercase">Nível</p>
                 <p className="text-xl font-bold text-sky-300">{level}</p>
                 <p className="text-[11px] text-slate-400 mt-0.5">
                   {totalScore}/{nextLevelScore} XP
