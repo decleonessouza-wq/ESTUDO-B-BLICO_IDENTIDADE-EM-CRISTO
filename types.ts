@@ -18,6 +18,7 @@ export enum Screen {
   SpiritualDiary,      // Diário Espiritual
   WeeklyChallenges,    // Desafios Semanais
   PrayerCenter,          // ⬅️ NOVO
+  ProfileSelect = "ProfileSelect",
 }
 
 // IDs dos minigames bônus

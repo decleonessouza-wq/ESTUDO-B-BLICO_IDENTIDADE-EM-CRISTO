@@ -52,6 +52,7 @@ const StudyScreen: React.FC = () => {
     userName,
     isAudioUnlocked,
     bgmUrls,
+    logout,
   } = useAppContext();
 
   const [studyStep, setStudyStep] = useState<StudyStep>("video");
@@ -68,6 +69,9 @@ const StudyScreen: React.FC = () => {
   const [lastReflectionText, setLastReflectionText] = useState<string | null>(
     null
   );
+
+  // ⭐ Conquistas (abre pelo botão da barra de progresso)
+  const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
 
   const currentStageData = useMemo(
     () => stagesData.find((s) => s.id === currentStageId),
@@ -96,7 +100,7 @@ const StudyScreen: React.FC = () => {
       if ((window as any).lucide) (window as any).lucide.createIcons();
     }, 0);
     return () => clearTimeout(timerId);
-  }, [currentStageId, studyStep, showStageComplete]);
+  }, [currentStageId, studyStep, showStageComplete, isAchievementsOpen]);
 
   // BGM do quiz
   useEffect(() => {
@@ -150,6 +154,18 @@ const StudyScreen: React.FC = () => {
   const handleGoToProfile = () => {
     playClickSound();
     navigateTo(Screen.UserProfile);
+  };
+
+  const handleToggleAchievements = () => {
+    playClickSound();
+    setIsAchievementsOpen((prev) => !prev);
+  };
+
+  const handleLogoutToProfileSelect = () => {
+    playClickSound();
+    logout();
+    // 🔹 aqui usamos o valor CORRETO do enum
+    navigateTo(Screen.ProfileSelect);
   };
 
   const handleQuizComplete = (score: number) => {
@@ -292,21 +308,45 @@ const StudyScreen: React.FC = () => {
     <AnimatedScreen>
       <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
         <div className="mb-8 w-full px-4">
-          {/* linha título + botão de perfil */}
-          <div className="flex items-center justify-between gap-2 mb-2">
+          {/* linha título + botões da barra */}
+          <div className="flex items-center justify-between gap-3 mb-2">
             <h2
               className={`text-xl font-bold text-center flex-1 ${theme.accentText}`}
             >
-              Progresso da Jornada de {displayName}
+              Progresso da Jornada de {displayName.toLowerCase()}
             </h2>
-            <button
-              type="button"
-              onClick={handleGoToProfile}
-              className="flex items-center gap-1 px-3 py-1 rounded-full text-[11px] border border-cyan-400/70 bg-gray-900/70 text-cyan-100 hover:bg-cyan-500/10 transition whitespace-nowrap"
-            >
-              <i data-lucide="user-circle-2" className="w-4 h-4" />
-              <span>Meu Perfil</span>
-            </button>
+
+            <div className="flex items-center gap-2">
+              {/* Conquistas */}
+              <button
+                type="button"
+                onClick={handleToggleAchievements}
+                className="flex items-center gap-1 px-3 py-1 rounded-full text-[11px] border border-amber-400/80 bg-gray-900/80 text-amber-100 hover:bg-amber-500/10 transition whitespace-nowrap shadow-sm"
+              >
+                <i data-lucide="trophy" className="w-4 h-4" />
+                <span>Conquistas</span>
+              </button>
+
+              {/* Meu Perfil */}
+              <button
+                type="button"
+                onClick={handleGoToProfile}
+                className="flex items-center gap-1 px-3 py-1 rounded-full text-[11px] border border-cyan-400/70 bg-gray-900/70 text-cyan-100 hover:bg-cyan-500/10 transition whitespace-nowrap"
+              >
+                <i data-lucide="user-circle-2" className="w-4 h-4" />
+                <span>Meu Perfil</span>
+              </button>
+
+              {/* Sair */}
+              <button
+                type="button"
+                onClick={handleLogoutToProfileSelect}
+                className="flex items-center gap-1 px-3 py-1 rounded-full text-[11px] border border-rose-400/70 bg-gray-900/70 text-rose-100 hover:bg-rose-500/10 transition whitespace-nowrap"
+              >
+                <i data-lucide="log-out" className="w-4 h-4" />
+                <span>Sair</span>
+              </button>
+            </div>
           </div>
 
           <div className="w-full bg-gray-700 rounded-full h-4 shadow-inner">
@@ -365,12 +405,33 @@ const StudyScreen: React.FC = () => {
         {renderContent()}
       </div>
 
-      {/* Rodapé gamificado: conquistas + HUD do jogador (lado a lado) */}
+      {/* Rodapé gamificado: apenas HUD do jogador agora */}
       <div className="w-full max-w-4xl mx-auto mt-4 px-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-        <AchievementsPanel />
-        {/* Aqui o HUD vem em modo inline, não fixo */}
         <PlayerStatusBar fixed={false} />
       </div>
+
+      {/* Footer global da tela de estudo */}
+      <footer className="w-full mt-10 text-center text-[11px] text-gray-400/90">
+        <div className="border-t border-gray-700/60 pt-4 max-w-4xl mx-auto">
+          <p>
+            © 2025 - Estudo Digital Online:{" "}
+            <span className="font-semibold text-gray-200">
+              Identidade em Cristo
+            </span>{" "}
+            - By{" "}
+            <span className="font-semibold text-gray-200">
+              Decleones Andrade
+            </span>
+            .
+          </p>
+        </div>
+      </footer>
+
+      {/* Modal de conquistas: aberto somente pela barra superior */}
+      <AchievementsPanel
+        isOpen={isAchievementsOpen}
+        onClose={handleToggleAchievements}
+      />
 
       {/* ⭐ MODAL DE ETAPA CONCLUÍDA */}
       {showStageComplete && lastStageId && (
