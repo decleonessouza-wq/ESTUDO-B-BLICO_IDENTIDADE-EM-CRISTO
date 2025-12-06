@@ -15,7 +15,6 @@ type StudyStep = "video" | "quiz" | "reflection";
 
 const getStageTheme = (stageId: number): ThemeProps => {
   const id = ((stageId - 1) % 6) + 1;
-
   return {
     cardBorder: `border-stage-${id}-dark`,
     accentText: `text-stage-${id}-light`,
@@ -234,10 +233,10 @@ const StudyScreen: React.FC = () => {
 
         return (
           <div
-            className={`w-full max-w-4xl p-6 bg-gray-800 bg-opacity-70 backdrop-blur-sm rounded-2xl shadow-2xl border ${theme.cardBorder} text-white text-center animate-fade-in`}
+            className={`w-full max-w-4xl p-4 sm:p-6 bg-gray-800 bg-opacity-70 backdrop-blur-sm rounded-2xl shadow-2xl border ${theme.cardBorder} text-white text-center animate-fade-in`}
           >
             <div
-              className={`aspect-w-16 aspect-h-9 w-full rounded-lg overflow-hidden shadow-lg mb-6 border-2 ${theme.cardBorder}`}
+              className={`aspect-w-16 aspect-h-9 w-full rounded-lg overflow-hidden shadow-lg mb-4 sm:mb-6 border-2 ${theme.cardBorder}`}
             >
               {isMp4 ? (
                 <video
@@ -307,16 +306,16 @@ const StudyScreen: React.FC = () => {
   return (
     <AnimatedScreen>
       <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
-        <div className="mb-8 w-full px-4">
+        <div className="mb-6 sm:mb-8 w-full px-3 sm:px-4">
           {/* linha título + botões da barra */}
-          <div className="flex items-center justify-between gap-3 mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between items-stretch gap-3 mb-2">
             <h2
-              className={`text-xl font-bold text-center flex-1 ${theme.accentText}`}
+              className={`text-lg sm:text-xl font-bold text-center sm:text-left flex-1 ${theme.accentText}`}
             >
               Progresso da Jornada de {displayName.toLowerCase()}
             </h2>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
               {/* Conquistas */}
               <button
                 type="button"
@@ -361,7 +360,8 @@ const StudyScreen: React.FC = () => {
               )}
             </div>
           </div>
-          <div className="flex justify-between mt-2 text-xs text-gray-400">
+
+          <div className="flex flex-wrap justify-between mt-2 text-[11px] sm:text-xs text-gray-400 gap-1">
             {stagesData.map((stage) => (
               <div key={stage.id} className="flex-1 text-center font-bold">
                 <span
@@ -380,7 +380,7 @@ const StudyScreen: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full max-w-4xl text-center text-white mb-6 px-4">
+        <div className="w-full max-w-4xl text-center text-white mb-4 sm:mb-6 px-3 sm:px-4">
           <div className="flex items-center justify-center relative">
             {currentStageId > 1 && (
               <button
@@ -391,11 +391,11 @@ const StudyScreen: React.FC = () => {
                 <i data-lucide="arrow-left" className="w-6 h-6" />
               </button>
             )}
-            <h1 className="text-2xl md:text-3xl font-bold px-10">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold px-6 sm:px-10">
               {currentStageData.title}
             </h1>
           </div>
-          <p className="text-gray-300 mt-2">
+          <p className="text-gray-300 mt-2 text-sm sm:text-base">
             {currentStageData.motivationalPhrase}
           </p>
         </div>
@@ -406,12 +406,12 @@ const StudyScreen: React.FC = () => {
       </div>
 
       {/* Rodapé gamificado: apenas HUD do jogador agora */}
-      <div className="w-full max-w-4xl mx-auto mt-4 px-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+      <div className="w-full max-w-4xl mx-auto mt-4 px-3 sm:px-4 flex flex-col sm:flex-row items-center justify-center gap-3">
         <PlayerStatusBar fixed={false} />
       </div>
 
       {/* Footer global da tela de estudo */}
-      <footer className="w-full mt-10 text-center text-[11px] text-gray-400/90">
+      <footer className="w-full mt-10 text-center text-[11px] text-gray-400/90 px-3">
         <div className="border-t border-gray-700/60 pt-4 max-w-4xl mx-auto">
           <p>
             © 2025 - Estudo Digital Online:{" "}
