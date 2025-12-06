@@ -29,7 +29,7 @@ import { getStagesData } from "../constants";
 // Integração com Firestore para salvar jornada
 import { saveJourney, JourneyDocument } from "../firebase/journeyService";
 
-const LOCAL_STORAGE_KEY = "identidadeCristoProgress";
+const LOCAL_STORAGE_KEY = "identidadeCristoProgress"; // agora é prefixo
 const USER_STORAGE_KEY = "identidadeCristoUser";
 const ADMIN_PARTICIPANTS_KEY = "identidadeCristoParticipants";
 
@@ -231,23 +231,17 @@ const getEarnedMedals = (
   return medals;
 };
 
+// 🔑 helper: chave de storage por usuário
+const getProgressStorageKey = (userId: string | null) =>
+  userId ? `${LOCAL_STORAGE_KEY}:${userId}` : `${LOCAL_STORAGE_KEY}:guest`;
+
 // -------------------------------------------------------- //
 
 const loadInitialState = (): AppState => {
-  const savedProgress = localStorage.getItem(LOCAL_STORAGE_KEY);
   const savedUser = localStorage.getItem(USER_STORAGE_KEY);
 
-  let progressData: Partial<AppState> = {};
   let userData: UserData = { userId: null, token: null, isAdmin: false };
-
-  try {
-    if (savedProgress) {
-      progressData = JSON.parse(savedProgress);
-    }
-  } catch (error) {
-    console.error("Failed to parse progress data from localStorage", error);
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
-  }
+  let progressData: Partial<AppState> = {};
 
   try {
     if (savedUser) {
@@ -256,6 +250,24 @@ const loadInitialState = (): AppState => {
   } catch (error) {
     console.error("Failed to parse user data from localStorage", error);
     localStorage.removeItem(USER_STORAGE_KEY);
+  }
+
+  try {
+    const perUserKey = getProgressStorageKey(userData.userId);
+    let rawProgress = localStorage.getItem(perUserKey);
+
+    // fallback: versão antiga single-user
+    if (!rawProgress) {
+      rawProgress = localStorage.getItem(LOCAL_STORAGE_KEY);
+    }
+
+    if (rawProgress) {
+      progressData = JSON.parse(rawProgress);
+    }
+  } catch (error) {
+    console.error("Failed to parse progress data from localStorage", error);
+    const perUserKey = getProgressStorageKey(userData.userId);
+    localStorage.removeItem(perUserKey);
   }
 
   return {
@@ -411,16 +423,60 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     totalTimeMinutes,
   ]);
 
-  // Gera userId local se não existir
+  // helper para gerar userId a partir de nome + data
   const ensureUserId = useCallback(
     (name: string, date: string | null): string => {
-      if (userId) return userId;
       const base = `${name || "user"}_${date || "no-date"}`.toLowerCase();
       const clean = base.replace(/\s+/g, "_");
       setUserId(clean);
       return clean;
     },
-    [userId]
+    []
+  );
+
+  // 🔄 carrega progresso salvo de um userId específico
+  const loadProfileFromStorage = useCallback(
+    (id: string) => {
+      try {
+        const raw = localStorage.getItem(getProgressStorageKey(id));
+        if (!raw) {
+          // nenhum progresso salvo ainda -> limpa estado da jornada, mas mantém nome/data recém definidos
+          setStageProgress({});
+          setCurrentStageId(1);
+          setPosts([]);
+          setJourneyStartAt(null);
+          setCompletedAt(null);
+          setTotalTimeMinutes(null);
+          setCompletedBonusGames(new Set());
+          setPhysicalRewardChoiceState(null);
+          setIsAudioUnlocked(false);
+          return;
+        }
+
+        const stored = JSON.parse(raw) as Partial<AppState>;
+
+        setStageProgress(stored.stageProgress || {});
+        setCurrentStageId(stored.currentStageId || 1);
+        setPosts(stored.posts || []);
+        setJourneyStartAt(stored.journeyStartAt || null);
+        setCompletedAt(stored.completedAt || null);
+        setTotalTimeMinutes(stored.totalTimeMinutes ?? null);
+        setCompletedBonusGames(
+          new Set<BonusGameId>(stored.completedBonusGames || [])
+        );
+        setPhysicalRewardChoiceState(stored.physicalRewardChoice ?? null);
+        setIsAudioUnlocked(stored.isAudioUnlocked ?? false);
+        if (stored.photo) {
+          setPhoto(stored.photo);
+        }
+      } catch (error) {
+        console.error(
+          "Erro ao carregar progresso salvo para o usuário:",
+          error
+        );
+      }
+    },
+    []
   );
 
   // 🔹 Sincronizar fila offline -> Firestore
@@ -521,8 +577,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     physicalRewardChoice,
   ]);
 
-  // Salvar progresso no localStorage
+  // Salvar progresso no localStorage (por usuário)
   useEffect(() => {
+    if (!userId) return;
+
     const dataToSave: Partial<AppState> = {
       userName,
       birthDate,
@@ -538,8 +596,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       // 🔊 salva também o estado atual do áudio
       isAudioUnlocked,
     };
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
+
+    try {
+      const key = getProgressStorageKey(userId);
+      localStorage.setItem(key, JSON.stringify(dataToSave));
+    } catch (error) {
+      console.error("Erro ao salvar progresso no localStorage:", error);
+    }
   }, [
+    userId,
     userName,
     birthDate,
     photo,
@@ -554,37 +619,39 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     isAudioUnlocked,
   ]);
 
-  // Salvar dados de "auth" local
+  // Salvar dados de "auth" local (usuário atual logado)
   useEffect(() => {
     const userData: UserData = { userId, token, isAdmin };
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
   }, [userId, token, isAdmin]);
 
-  // Login simples (sem backend)
+  // Login simples (sem backend) – agora carrega o perfil salvo do usuário
   const login = useCallback(
     async (name: string, date: string): Promise<boolean> => {
       setUserName(name);
       setBirthDate(date);
-      ensureUserId(name, date);
+      const id = ensureUserId(name, date);
       setToken(null);
       setIsAdmin(false);
       setIsLoaded(true);
+      loadProfileFromStorage(id);
       return true;
     },
-    [ensureUserId]
+    [ensureUserId, loadProfileFromStorage]
   );
 
   const register = useCallback(
     async (name: string, date: string): Promise<boolean> => {
       setUserName(name);
       setBirthDate(date);
-      ensureUserId(name, date);
+      const id = ensureUserId(name, date);
       setToken(null);
       setIsAdmin(false);
       setIsLoaded(true);
+      loadProfileFromStorage(id);
       return true;
     },
-    [ensureUserId]
+    [ensureUserId, loadProfileFromStorage]
   );
 
   // Admin: senha via env com fallback
@@ -601,6 +668,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       setIsAdmin(true);
       setUserId("admin");
       setToken(null);
+      setIsLoaded(true);
       navigateTo(Screen.AdminDashboard);
       return true;
     }
@@ -608,12 +676,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const logout = () => {
-    setUserId(null);
-    setToken(null);
-    setIsAdmin(false);
-    localStorage.removeItem(USER_STORAGE_KEY);
-    resetJourney();
-  };
+  // limpa apenas o "estado atual" na memória,
+  // mas NÃO apaga o progresso salvo por perfil no localStorage
+  setUserId(null);
+  setToken(null);
+  setIsAdmin(false);
+  setUserName("");
+  setBirthDate(null);
+  setPhoto(null);
+  setStageProgress({});
+  setCurrentStageId(1);
+  setPosts([]);
+  setJourneyStartAt(null);
+  setCompletedAt(null);
+  setTotalTimeMinutes(null);
+  setCompletedBonusGames(new Set());
+  setPhysicalRewardChoiceState(null);
+  setIsAudioUnlocked(false);
+
+  // limpar info de auth atual
+  localStorage.removeItem(USER_STORAGE_KEY);
+
+  // 🌟 IMPORTANTE: volta para a tela de seleção de perfil
+  navigateTo(Screen.ProfileSelect);
+};
 
   const markBonusGameAsComplete = useCallback((gameId: BonusGameId) => {
     setCompletedBonusGames((prev) => {
@@ -810,10 +896,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     );
   };
 
+  // 🔁 resetJourney agora apaga só o progresso do usuário atual
+  // (mas pode ser usado como "recomeçar do zero" no app)
   const resetJourney = () => {
-    setUserName("");
-    setBirthDate(null);
-    setPhoto(null);
+    if (userId) {
+      localStorage.removeItem(getProgressStorageKey(userId));
+    } else {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    }
+
     setStageProgress({});
     setCurrentStageId(1);
     setPosts([]);
@@ -823,7 +914,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     setCompletedBonusGames(new Set());
     setPhysicalRewardChoiceState(null);
     setIsAudioUnlocked(false);
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
     navigateTo(Screen.Welcome);
   };
 
