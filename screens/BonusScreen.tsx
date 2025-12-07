@@ -17,7 +17,7 @@ type BonusView =
   | "hub"
   | BonusGameId
   | "reward"
-  | "identityFiles"; // mini‑game extra
+  | "identityFiles"; // mini-game extra
 
 type ShareData = {
   title: string;
@@ -134,12 +134,14 @@ const appendDiaryEntryFromIdentityFiles = (content: string) => {
 };
 
 /**
- * 🎮 Mini‑game: Identity Files
+ * 🎮 Mini-game: Identity Files
  * Gera um arquivo / texto com declarações de identidade em Cristo,
  * com 6+ declarações + uma declaração personalizada do usuário,
- * pré‑visualização e criação automática de entrada no Diário Espiritual.
+ * pré-visualização e criação automática de entrada no Diário Espiritual.
  */
-const IdentityFilesMiniGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+const IdentityFilesMiniGame: React.FC<{ onBack: () => void }> = ({
+  onBack,
+}) => {
   const { userName } = useAppContext();
   const [tone, setTone] = useState<"firm" | "soft" | "warrior">("firm");
   const [userDeclaration, setUserDeclaration] = useState("");
@@ -389,6 +391,7 @@ const BonusScreen: React.FC = () => {
     // 👇 usados para avançar de etapa ao voltar para a jornada
     currentStageId,
     stageProgress,
+    completedAt,
     stagesData,
     setCurrentStageId,
   } = useAppContext();
@@ -414,13 +417,35 @@ const BonusScreen: React.FC = () => {
     }
   }, [currentView, completedBonusGames]);
 
+  // ✅ Detecta se a jornada já foi concluída
+  const isJourneyCompleted = useMemo(() => {
+    // Se já temos completedAt salvo, a jornada foi finalizada
+    if (completedAt) return true;
+
+    if (!stagesData || stagesData.length === 0) return false;
+
+    const totalStages = stagesData.length;
+    const completedCount = stagesData.filter(
+      (stage) => stageProgress[stage.id]?.completed
+    ).length;
+
+    return totalStages > 0 && completedCount >= totalStages;
+  }, [completedAt, stagesData, stageProgress]);
+
   const handleGameComplete = (gameId: BonusGameId) => {
     markBonusGameAsComplete(gameId);
     setCurrentView("hub");
   };
 
-  // 🔁 Voltar para a jornada indo para a PRÓXIMA etapa não concluída
+  // 🔁 Voltar para a jornada
   const goBackToJourneyNextStage = () => {
+    // 👉 se a jornada JÁ FOI CONCLUÍDA, não volta mais pra etapa 6
+    if (isJourneyCompleted) {
+      navigateTo(Screen.Final);
+      return;
+    }
+
+    // 👉 se ainda não concluiu tudo, mantém a lógica antiga
     if (!stagesData || stagesData.length === 0) {
       navigateTo(Screen.Study);
       return;
@@ -517,7 +542,8 @@ const BonusScreen: React.FC = () => {
   );
 
   const GameHub = () => {
-    const allGamesCompleted = completedBonusGamesSet.size === GAMES_CONFIG.length;
+    const allGamesCompleted =
+      completedBonusGamesSet.size === GAMES_CONFIG.length;
     return (
       <div className="animate-fade-in">
         <h1 className="text-3xl md:text-4xl font-bold mb-2">

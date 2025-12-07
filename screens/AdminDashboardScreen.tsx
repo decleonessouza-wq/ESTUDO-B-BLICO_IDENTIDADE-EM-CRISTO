@@ -37,7 +37,7 @@ type AdminTab = "dashboard" | "posts" | "stages";
 type DateFilter = "all" | "7" | "30" | "custom";
 
 interface StageProgressSnapshot {
-  score: number;
+  score?: number;
   reflection?: string;
   completed?: boolean;
 }
@@ -51,6 +51,7 @@ interface JourneyDoc {
   currentStageId?: number;
   totalScore?: number;
   completedStages?: number;
+  totalStages?: number;
   journeyStartAt?: any;
   completedAt?: any;
   totalTimeMinutes?: number | null;
