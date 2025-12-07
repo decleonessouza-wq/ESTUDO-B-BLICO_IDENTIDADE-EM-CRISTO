@@ -5,7 +5,7 @@ import ActionButton from '../components/ActionButton';
 import AnimatedScreen from '../components/AnimatedScreen';
 import { CHURCH_LOGO_URL, SOUNDS } from '../constants';
 import { useSound } from '../hooks/useSound';
-import PlayerStatusBar from '../components/PlayerStatusBar'; // ⬅️ NOVO IMPORT
+import PlayerStatusBar from '../components/PlayerStatusBar'; // HUD
 
 const WelcomeScreen: React.FC = () => {
   const {
@@ -13,8 +13,7 @@ const WelcomeScreen: React.FC = () => {
     navigateTo,
     loginAdmin,
     markJourneyStart,
-    // ⬇️ IMPORTANTE: destrutura o unlockAudio do contexto
-    unlockAudio,
+    register, // ⬅️ NOVO: usar o fluxo de registro
   } = useAppContext();
 
   const [name, setName] = useState('');
@@ -24,28 +23,29 @@ const WelcomeScreen: React.FC = () => {
   const [adminError, setAdminError] = useState('');
   const playIntroSound = useSound(SOUNDS.INTRO.id, 0.5);
 
-  const handleStart = () => {
+  const handleStart = async () => {
     const trimmedName = name.trim();
-    if (trimmedName) {
-      setUserName(trimmedName);
+    if (!trimmedName) return;
 
-      // 🔊 DESBLOQUEIA ÁUDIO NO PRIMEIRO CLIQUE
-      if (unlockAudio) {
-        unlockAudio();
-      }
-
-      // Som de introdução (agora liberado)
-      playIntroSound();
-
-      markJourneyStart();
-      navigateTo(Screen.Instructions);
+    // ⬇️ Fluxo correto: registra o usuário (gera userId, salva no estado, etc.)
+    const ok = await register(trimmedName, ""); // birthDate vazio por enquanto
+    if (!ok) {
+      // se algum dia você quiser tratar erro de backend, faz aqui
+      return;
     }
+
+    // ainda mantemos o setUserName por garantia visual (mas já vem do register)
+    setUserName(trimmedName);
+
+    playIntroSound();
+    markJourneyStart();
+    navigateTo(Screen.Instructions);
   };
 
   const canStart = name.trim() !== '';
 
   const toggleAdminLogin = () => {
-    setShowAdminLogin((prev) => !prev);
+    setShowAdminLogin(prev => !prev);
     setAdminError('');
   };
 
@@ -75,15 +75,12 @@ const WelcomeScreen: React.FC = () => {
       <div className="flex flex-col justify-between items-center text-center text-white min-h-[85vh] w-full max-w-sm mx-auto py-4">
         {/* Top Content Block */}
         <div>
-          <img
-            src={CHURCH_LOGO_URL}
-            alt="Logo da Igreja"
+          <img 
+            src={CHURCH_LOGO_URL} 
+            alt="Logo da Igreja" 
             className="w-48 h-48 object-contain mx-auto mb-1 animate-fade-in-down"
           />
-          <p
-            className="text-sm text-gray-400 mb-4 -mt-2 animate-fade-in-down"
-            style={{ animationDelay: '0.15s' }}
-          >
+          <p className="text-sm text-gray-400 mb-4 -mt-2 animate-fade-in-down" style={{ animationDelay: '0.15s' }}>
             Igreja Ev. Pentecostal - Jardim de Oração Independente P90
           </p>
           <h1
@@ -122,9 +119,7 @@ const WelcomeScreen: React.FC = () => {
             className="mt-4 w-full text-sm text-blue-300 hover:text-blue-100 transition-colors"
             type="button"
           >
-            {showAdminLogin
-              ? 'Fechar acesso administrativo'
-              : 'Acesso Administrativo'}
+            {showAdminLogin ? 'Fechar acesso administrativo' : 'Acesso Administrativo'}
           </button>
 
           {showAdminLogin && (
@@ -178,7 +173,7 @@ const WelcomeScreen: React.FC = () => {
         </div>
       </div>
 
-      {/* barra de status/jogador visível também na tela inicial */}
+      {/* HUD fixa no rodapé */}
       <PlayerStatusBar />
     </AnimatedScreen>
   );

@@ -577,10 +577,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     physicalRewardChoice,
   ]);
 
-  // Salvar progresso no localStorage (por usuário)
+  // Salvar progresso no localStorage (por usuário ou convidado)
   useEffect(() => {
-    if (!userId) return;
-
     const dataToSave: Partial<AppState> = {
       userName,
       birthDate,
@@ -598,7 +596,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     };
 
     try {
-      const key = getProgressStorageKey(userId);
+      // se não tiver userId ainda, salva como "guest"
+      const key = getProgressStorageKey(userId || null);
       localStorage.setItem(key, JSON.stringify(dataToSave));
     } catch (error) {
       console.error("Erro ao salvar progresso no localStorage:", error);
@@ -618,6 +617,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     physicalRewardChoice,
     isAudioUnlocked,
   ]);
+
 
   // Salvar dados de "auth" local (usuário atual logado)
   useEffect(() => {
@@ -747,8 +747,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const markJourneyStart = useCallback(() => {
+    // Marca o início da jornada (não sobrescreve se já tiver)
     setJourneyStartAt((prev) => prev ?? new Date().toISOString());
-  }, []);
+
+    // Garante que sempre exista um userId (mesmo sem login formal)
+    // Se já existir, não faz nada. Se não existir, gera um a partir do nome + data
+    ensureUserId(userName || "Convidado", birthDate || null);
+  }, [ensureUserId, userName, birthDate]);
+
 
   const markJourneyCompleted = useCallback(() => {
     const completionTime = new Date().toISOString();
