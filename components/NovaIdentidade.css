@@ -1,267 +1,308 @@
-/* Conteúdo para: src/components/NovaIdentidade.css */
+/* src/components/NovaIdentidade.css */
 
 :root {
-  --doc-width: 102mm;
-  --doc-total-height: 135.8mm;
-  --doc-half-height: 67.9mm;
+  --novaId-bg: #ecf7e4;
+  --novaId-green-strong: #008f3b;
+  --novaId-green-soft: #3ba85b;
+  --novaId-main-text: #06310f;
+  --novaId-border: #cbd5d1;
+  --novaId-label: #4b5563;
 }
 
-/* Precisamos dar um 'font-family' base, já que ele não herda do 'body' */
-.documento {
-  font-family: Arial, sans-serif;
-  /* Garante que o fundo não seja transparente no download */
-  background-color: white; 
-}
-
-/* Estilos da Carteira (card) */
-.documento {
-  width: var(--doc-width);
-  height: var(--doc-total-height);
-  border: 1px solid #ccc;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  position: relative;
-  /* AJUSTE: Caminho para a imagem na sua pasta public/images */
-  background: url('/images/fundo-identidade.png') no-repeat center/cover;
-}
-
-.frente,
-.verso {
+/* wrapper geral da tela */
+.novaId-wrapper {
   width: 100%;
-  height: var(--doc-half-height);
-  position: absolute;
-  left: 0;
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
 }
 
-.frente {
-  top: 0;
-  padding: 3mm;
-  border-bottom: 1px dashed #aaa;
+/* card com proporção fixa (ajuda a não deformar no celular) */
+.novaId-card {
+  width: min(100%, 420px);
+  aspect-ratio: 3 / 5;
+  background: radial-gradient(circle at top, #f8fff1 0, #e3f3d5 40%, #d4e9c8 100%);
+  border-radius: 18px;
+  padding: 0.7rem 0.9rem;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--novaId-main-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Este é o seletor CORRIGIDO para o LOGO DA IGREJA (Direita) */
-.frente .logo-governo {
-  position: absolute; 
-  top: 1mm; /* Ajustado para alinhar com o brasão */
-  right: 2mm;
-  width: 18mm; /* Ajustado para alinhar com o brasão */
-  height: 18mm; /* Ajustado para alinhar com o brasão */
-  background: url('/images/IGREJA-LOGO.png') no-repeat center/contain;
+/* TEXTOS USAM CLAMP PARA ESCALAR BEM EM CELULAR E PC */
+.novaId-card,
+.novaId-card * {
+  font-size: clamp(0.55rem, 1.5vw, 0.8rem);
 }
 
-/* --- FIM DA SUBSTITUIÇÃO --- */
+/* ---------- CABEÇALHO ---------- */
 
-.frente header {
+.novaId-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.novaId-header-top {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  align-items: center;
   text-align: center;
-  line-height: 1.2;
-  color: #006400;
 }
-.frente header h1 {
-  font-family: 'Oswald', sans-serif;
-  font-size: 4.5mm;
+
+.novaId-header-titleMain {
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--novaId-green-strong);
+  font-size: clamp(0.75rem, 2.2vw, 1rem);
+}
+
+.novaId-header-sub {
   font-weight: 700;
   text-transform: uppercase;
-}
-.frente .subtitulo-governo {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 2.4mm;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-.frente .subtitulo-secretaria {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 2.2mm;
-  color: black;
-  margin-top: 3mm;
-  line-height: 0.8;
-}
-.frente header h2 {
-  font-family: 'Oswald', sans-serif;
-  font-size: 4mm;
-  font-weight: bold;
-  color: #222;
-  margin-top: 2mm;
-}
-.frente header h3 {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 2.2mm;
-  color: #006400;
-  margin-top: 1mm;
+  color: var(--novaId-green-soft);
 }
 
-.frente .foto {
-  position: absolute;
-  top: 26mm;
-  left: 4mm;
-  width: 24mm;
-  height: 32mm;
-  border-radius: 3mm;
-  background-color: #fff;
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-}
-.frente .conteudo {
-  position: absolute;
-  top: 30mm;
-  left: 33mm;
-  right: 3mm;
-
-  
-}
-.frente .linha {
+.novaId-header-bottom {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.2mm;
- 
+  align-items: flex-start;
+  margin-top: 0.25rem;
 }
-.frente .campo {
-  width: 50%;
+
+.novaId-header-org {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: clamp(0.55rem, 1.6vw, 0.75rem);
+}
+
+.novaId-header-logo {
+  width: clamp(32px, 12vw, 50px);
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  border: 2px solid var(--novaId-green-strong);
+  background: radial-gradient(circle at center, #fff 0, #e2e8f0 45%, #cbd5f5 100%);
+}
+
+/* ---------- CORPO PRINCIPAL (FOTO + DADOS) ---------- */
+
+.novaId-body {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin-top: 0.25rem;
+}
+
+/* Foto 3x4 */
+.novaId-photoBox {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.novaId-photoImg,
+.novaId-photoPlaceholder {
+  width: 100%;
+  max-width: 120px;
+  aspect-ratio: 3 / 4;
+  border-radius: 16px;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.45);
+  object-fit: cover;
+  background: #111827;
+}
+
+.novaId-photoPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e5e7eb;
+  font-weight: 600;
+}
+
+/* Dados textuais */
+.novaId-data {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.novaId-docTitle {
+  font-weight: 800;
+  text-transform: uppercase;
   text-align: left;
+  font-size: clamp(0.7rem, 2vw, 0.9rem);
 }
-.frente .campo .label {
-  font-size: 2mm;
-  font-weight: bold;
-  color: #006400;
+
+.novaId-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+/* filas de campos */
+.novaId-gridRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.novaId-gridRow--twoCols {
+  display: grid;
+  grid-template-columns: 1.1fr 1.2fr;
+  gap: 0.25rem;
+}
+
+/* Informação individual */
+.novaId-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.novaId-label {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--novaId-label);
+  font-size: clamp(0.5rem, 1.3vw, 0.65rem);
+}
+
+.novaId-value {
+  font-weight: 600;
   line-height: 1.1;
 }
-.frente .campo .valor {
-  font-size: 2.2mm;
-  white-space: nowrap;
-  font-weight: bold;
-  color: #0f0f0f;
-}
-.frente .assinatura {
-  position: absolute;
-  bottom: 1mm;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  width: 45mm;
-}
-.frente .assinatura-linha {
-  border-top: 1px solid #000;
-  margin-bottom: 0.5mm;
-}
-.frente .assinatura-label {
-  font-size: 2.2mm;
-  color: #444;
+
+.novaId-value--strong {
+  font-weight: 700;
+  font-size: clamp(0.7rem, 2.1vw, 0.95rem);
 }
 
-.verso {
-  top: var(--doc-half-height);
-  padding: 3mm;
-  position: relative;
-}
+/* ---------- ASSINATURA TITULAR ---------- */
 
-.verso .conteudo-superior-verso {
+.novaId-assinaturaTitular {
+  margin-top: 0.2rem;
   display: flex;
-  align-items: flex-start;
-  gap: 2mm;
-  position: relative;
-  top: 3mm;
-  left: -7mm;
-}
-.verso .mapa-fundo {
-  width: 34mm;
-  height: 23mm;
-  position: relative;
-  top: 0mm;
-  left: 2.7mm;
-  /* AJUSTE: Caminho para a imagem na sua pasta public/images */
-  background: url('/images/ESTUDO-corte.png') no-repeat center center;
-  background-size: contain;
-  opacity: 0.9;
-}
-.verso .dados-expedicao {
-  text-align: left;
-}
-.verso .campo-exp {
-  margin-bottom: 1.1mm;
-}
-.verso .campo-exp .label {
-  font-weight: bold;
-  font-size: 2.4mm;
-  color: #000000
-}
-.verso .campo-exp .valor {
-  font-size: 2.4mm;
-  color: #006400;
-  font-weight: bold;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
 }
 
-.verso .assinatura-divina {
-  margin-top: 4mm;
-  text-align: center;
-  color: #006400;
-}
-.verso .assinatura-divina-img {
-  font-family: 'Brush Script MT', cursive;
-  font-size: 6mm;
-  color: black;
-}
-.verso .assinatura-divina-label {
-  font-size: 2.2mm;
-  border-top: 1px solid #006400;
-  width: 40mm;
-  display: block;
-  margin: -2mm auto 0;
+.novaId-assinaturaLinha {
+  width: 70%;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.8);
 }
 
-.verso .validade-container {
+.novaId-assinaturaLabel {
+  font-size: clamp(0.5rem, 1.4vw, 0.7rem);
+}
+
+/* ---------- ÁREA INFERIOR (QR + DADOS) ---------- */
+
+.novaId-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.4fr);
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.novaId-qrBox {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1.5mm;
-  margin-top: 4mm;
-}
-.verso .espaco-figura {
-  width: 10mm;
-  height: 10mm;
-  border: 1px solid #ccc;
-}
-.verso .validade {
-  font-size: 1.6mm;
-  text-align: center;
-  margin-top: -12mm;
-  color: #006400;
 }
 
-.verso .versiculo {
-  font-style: italic;
-  font-size: 2.5mm;
-  color: #333;
-  margin-bottom: -20mm;
+.novaId-qrFake {
+  width: min(100%, 90px);
+  aspect-ratio: 1 / 1;
+  background-image: repeating-linear-gradient(
+      45deg,
+      #000 0,
+      #000 2px,
+      transparent 2px,
+      transparent 4px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      #000 0,
+      #000 2px,
+      transparent 2px,
+      transparent 4px
+    );
+  background-size: 6px 6px, 6px 6px;
+  border-radius: 4px;
 }
 
-.verso .rodape-verso {
-  position: absolute;
-  bottom: 3mm;
-  left: 3mm;
-  right: 3mm;
-  text-align: center;
-}
-.verso .rodape-container {
+/* dados de expedição */
+.novaId-bottomData {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.verso .rodape-texto-esquerda,
-.verso .rodape-texto-direita {
-  font-size: 2mm;
-  font-weight: bold;
-  width: 42%;
-  margin-bottom: -8mm;
-}
-.verso .logo-rodape {
-  width: 30%;
-  height: 12mm;
-  /* AJUSTE: Caminho para a imagem na sua pasta public/images */
-  background: url('/images/IGREJA-LOGO.png') no-repeat center/contain;
-  margin-bottom: 6mm;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
-/* AJUSTE: Caminhos para as imagens na sua pasta public/images */
-#figura1 { background: url('/images/JESUS-3.png') no-repeat center/contain; }
-#figura2 { background: url('/images/JESUS-2.png') no-repeat center/contain; }
-#figura3 { background: url('/images/JESUS.png') no-repeat center/contain; }
-#figura4 { background: url('/images/JESUS-4.png') no-repeat center/contain; }
+/* ---------- RODAPÉ ---------- */
+
+.novaId-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  text-align: center;
+}
+
+.novaId-footerLinha {
+  width: 80%;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.7);
+}
+
+.novaId-footerAssinatura {
+  font-family: "Dancing Script", "Pacifico", cursive;
+  font-size: clamp(0.8rem, 2.3vw, 1.1rem);
+  color: var(--novaId-green-strong);
+}
+
+.novaId-footerSelos {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.1rem;
+}
+
+.novaId-footerSelo {
+  width: clamp(16px, 4vw, 22px);
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+  border: 1px solid rgba(15, 23, 42, 0.4);
+  background: linear-gradient(135deg, #e5f4d6, #c0e5b2);
+}
+
+.novaId-footerVerso {
+  margin-top: 0.15rem;
+  font-size: clamp(0.5rem, 1.4vw, 0.75rem);
+  max-width: 95%;
+}
+
+/* ---------- AJUSTES PARA TELAS MUITO ESTREITAS ---------- */
+
+@media (max-width: 360px) {
+  .novaId-card {
+    padding: 0.6rem 0.7rem;
+  }
+
+  .novaId-body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  }
+
+  .novaId-bottom {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr);
+  }
+}
