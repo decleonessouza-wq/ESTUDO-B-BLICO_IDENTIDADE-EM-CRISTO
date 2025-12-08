@@ -285,6 +285,94 @@
             z-index: -1;
         }
 
+        /* ====== Ajustes responsivos para a Carta de Alforria ====== */
+        @media (max-width: 768px) {
+        body {
+            padding: 8px;
+            background: #0f172a;
+        }
+
+        main {
+            padding: 8px;
+        }
+
+        .container {
+            flex-direction: column;
+            padding: 8px;
+            gap: 12px;
+        }
+
+        #preview-container {
+            padding: 0;
+        }
+
+        .documento {
+            /* ocupa a largura disponível mantendo proporção aproximada A4 paisagem */
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            padding: 12px;
+            box-sizing: border-box;
+            margin: 0 auto;
+            border-width: 0;
+        }
+
+        .documento .background-image {
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center top;
+        }
+
+        .documento .titulo-carta {
+            top: 26%;              /* posição relativa ao cartão */
+            font-size: 7vw;        /* escala de acordo com a tela */
+            width: 90%;
+            white-space: normal;   /* permite quebrar em 2 linhas se precisar */
+        }
+
+        .content-wrapper {
+            flex-direction: column;
+            align-items: center;
+            margin-top: 44%;
+            padding-inline: 6%;
+            gap: 8px;
+        }
+
+        .content-col {
+            padding: 0;
+            margin-bottom: 6px;
+        }
+
+        .texto-carta {
+            font-size: 3.2vw;
+            line-height: 1.25;
+        }
+
+        .assinaturas {
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .assinatura {
+            width: 100%;
+            max-width: 260px;
+            margin: 0;
+        }
+
+        .assinatura span {
+            font-size: 3vw;
+        }
+
+        .referencia-biblica {
+            font-size: 3vw;
+            margin-top: 8px;
+        }
+        }
+
+
     </style>
 </head>
 <body>
