@@ -477,6 +477,12 @@ const BonusScreen: React.FC = () => {
     navigateTo(Screen.Study);
   };
 
+  // 👉 Ir direto para o Mural da Comunidade
+  const goToCommunityWall = () => {
+    playSelectSound();
+    navigateTo(Screen.CommunityWall);
+  };
+
   const handleShare = async (title: string, icon: string) => {
     setShareData({ title, icon });
 
@@ -530,14 +536,22 @@ const BonusScreen: React.FC = () => {
         esta jornada. Lembre-se, esta não é apenas informação; é uma
         transformação que ecoa na eternidade.
       </p>
-      <ActionButton
-        onClick={() => {
-          playSelectSound();
-          setCurrentView("hub");
-        }}
-      >
-        Ir para o Salão de Jogos
-      </ActionButton>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <ActionButton
+          onClick={() => {
+            playSelectSound();
+            setCurrentView("hub");
+          }}
+        >
+          Ir para o Salão de Jogos
+        </ActionButton>
+        <ActionButton
+          onClick={goToCommunityWall}
+          className="bg-gradient-to-r from-cyan-500 to-emerald-500 focus:ring-cyan-400"
+        >
+          Ir para o Mural da Comunidade
+        </ActionButton>
+      </div>
     </div>
   );
 
@@ -775,16 +789,28 @@ const BonusScreen: React.FC = () => {
   return (
     <AnimatedScreen>
       <div className="w-full max-w-4xl mx-auto">
-        {/* 🔙 botão para voltar para a jornada */}
+        {/* 🔙 voltar para a jornada  |  💬 ir para o mural */}
         <div className="flex items-center justify-between mb-3">
-          <button
-            type="button"
-            onClick={goBackToJourneyNextStage}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-slate-600 bg-slate-900/70 text-xs text-slate-100 hover:bg-slate-800 hover:border-sky-400 transition"
-          >
-            <i data-lucide="arrow-left" className="w-4 h-4" />
-            <span>Voltar para a jornada</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={goBackToJourneyNextStage}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-slate-600 bg-slate-900/70 text-xs text-slate-100 hover:bg-slate-800 hover:border-sky-400 transition"
+            >
+              <i data-lucide="arrow-left" className="w-4 h-4" />
+              <span>Voltar para a jornada</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={goToCommunityWall}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-cyan-500 bg-slate-900/70 text-xs text-cyan-100 hover:bg-slate-800 hover:border-cyan-300 transition"
+            >
+              <i data-lucide="messages-square" className="w-4 h-4" />
+              <span>Ir para o mural</span>
+            </button>
+          </div>
+
           <p className="text-[11px] text-slate-400 hidden sm:block">
             Salão de jogos · reforçando a sua identidade em Cristo
           </p>
