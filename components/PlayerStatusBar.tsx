@@ -6,7 +6,7 @@ const MAX_LEVEL = 5;
 const XP_PER_LEVEL = 200;
 
 interface PlayerStatusBarProps {
-  /** 
+  /**
    * fixed = true  -> barra flutuante fixa no rodapé (usado na tela inicial)
    * fixed = false -> barra inline, entra no fluxo da página (usado no StudyScreen)
    */
@@ -87,6 +87,12 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({ fixed = true }) => {
     `Etapa ${currentStageId}`;
 
   const firstName = userName ? userName.split(" ")[0] : "Jornada";
+
+  // 👇 NOVO: se estiver na versão fixa (tela inicial) e ainda não tiver nome,
+  // não renderiza a barra de jornada
+  if (fixed && !userName) {
+    return null;
+  }
 
   // 👉 classes do container: FIXO ou INLINE
   const containerClass = fixed

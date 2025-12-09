@@ -1,3 +1,4 @@
+// src/screens/WelcomeScreen.tsx
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Screen } from '../types';
@@ -28,7 +29,7 @@ const WelcomeScreen: React.FC = () => {
     if (!trimmedName) return;
 
     // ⬇️ Fluxo correto: registra o usuário (gera userId, salva no estado, etc.)
-    const ok = await register(trimmedName, ""); // birthDate vazio por enquanto
+    const ok = await register(trimmedName, ''); // birthDate vazio por enquanto
     if (!ok) {
       // se algum dia você quiser tratar erro de backend, faz aqui
       return;
@@ -45,7 +46,7 @@ const WelcomeScreen: React.FC = () => {
   const canStart = name.trim() !== '';
 
   const toggleAdminLogin = () => {
-    setShowAdminLogin(prev => !prev);
+    setShowAdminLogin((prev) => !prev);
     setAdminError('');
   };
 
@@ -75,12 +76,15 @@ const WelcomeScreen: React.FC = () => {
       <div className="flex flex-col justify-between items-center text-center text-white min-h-[85vh] w-full max-w-sm mx-auto py-4">
         {/* Top Content Block */}
         <div>
-          <img 
-            src={CHURCH_LOGO_URL} 
-            alt="Logo da Igreja" 
+          <img
+            src={CHURCH_LOGO_URL}
+            alt="Logo da Igreja"
             className="w-48 h-48 object-contain mx-auto mb-1 animate-fade-in-down"
           />
-          <p className="text-sm text-gray-400 mb-4 -mt-2 animate-fade-in-down" style={{ animationDelay: '0.15s' }}>
+          <p
+            className="text-sm text-gray-400 mb-4 -mt-2 animate-fade-in-down"
+            style={{ animationDelay: '0.15s' }}
+          >
             Igreja Ev. Pentecostal - Jardim de Oração Independente P90
           </p>
           <h1
@@ -119,7 +123,9 @@ const WelcomeScreen: React.FC = () => {
             className="mt-4 w-full text-sm text-blue-300 hover:text-blue-100 transition-colors"
             type="button"
           >
-            {showAdminLogin ? 'Fechar acesso administrativo' : 'Acesso Administrativo'}
+            {showAdminLogin
+              ? 'Fechar acesso administrativo'
+              : 'Acesso Administrativo'}
           </button>
 
           {showAdminLogin && (
@@ -175,6 +181,15 @@ const WelcomeScreen: React.FC = () => {
 
       {/* HUD fixa no rodapé */}
       <PlayerStatusBar />
+
+      {/* 🎵 Música de fundo (para quando esta tela estiver visível) */}
+      <audio
+        src="/Minha_Identidade_Decleones.mp3"
+        autoPlay
+        loop
+        playsInline
+        className="hidden"
+      />
     </AnimatedScreen>
   );
 };
