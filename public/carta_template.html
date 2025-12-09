@@ -1,389 +1,557 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Oswald:wght@400;500;700&family=Pinyon+Script&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap" rel="stylesheet">
-    <title>Gerador de Carta de Alforria Espiritual</title>
-    <style>
-        :root {
-            --doc-width: 102mm;
-            --doc-total-height: 135.8mm;
-            --main-green: #006400;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Oswald:wght@400;500;700&family=Pinyon+Script&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap"
+    rel="stylesheet"
+  />
 
-        body {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: #eaeaea;
-            padding: 20px 0;
-        }
+  <title>Gerador de Carta de Alforria Espiritual</title>
 
-        #form-container {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
-            width: var(--doc-width);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .input-group label {
-            font-weight: bold;
-            color: var(--main-green);
-            font-size: 14px;
-        }
-        .input-group input {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        #btn-gerar {
-            background: var(--main-green);
-            color: #fff;
-            padding: 10px 14px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        #btn-gerar:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        /* Estilos da Carta (documento) */
-        .documento {
-            width: 297mm; /* A4 width in landscape */
-            height: 210mm; /* A4 height in landscape */
-            padding: 25mm;
-            border: 1px solid #ccc;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-            position: relative;
-            background: transparent;
-            display: none;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .documento h1, .documento h2, .documento p, .documento li {
-            font-family: 'Montserrat', sans-serif;
-            color: white;
-        }
-        .documento .destaque {
-             color: #f8e688; 
-        }
-
-        .documento .titulo-carta {
-            font-family: 'Pinyon Script', cursive;
-            font-size: 70px;
-            font-weight: 400;
-            color: #f8e688;
-            text-align: center;
-            width: 85%;
-            position: absolute;
-            top: 330px;
-            left: 50%;
-            transform: translateX(-50%);
-            white-space: nowrap; /* Impede a quebra de linha */
-            overflow: hidden; /* Oculta o texto que transborda */
-        }
-
-        /* Estilo para dividir o conteúdo em duas colunas */
-        .content-wrapper {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-top: 350px;
-        }
-        .content-col {
-            flex: 1;
-            padding: 0 10mm;
-            text-align: center; 
-        }
-
-        .secao {
-            margin-bottom: 20px;
-        }
-        
-        .secao p, .secao li {
-            font-size: 12px;
-            line-height: 1.5;
-        }
-
-        .secao li {
-            list-style-type: none;
-            margin-left: 15px;
-            padding-left: 10px;
-            position: relative;
-        }
-
-        .secao li:before {
-            content: "";
-            position: absolute;
-            left: 0;
-            font-weight: bold;
-            color: gold;
-        }
-
-        .assinatura-bloco {
-            margin-top: 30px;
-            text-align: right;
-            width: 100%;
-        }
-
-        .toolbar {
-            margin-top: 20px;
-            display: none;
-            gap: 8px;
-            justify-content: center;
-        }
-
-        button {
-            border: none;
-            padding: 10px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            background: var(--main-green);
-            color: #fff;
-            font-size: 14px;
-        }
-
-        /* Estilos para impressão (orientação horizontal A4) */
-        @media print {
-            body {
-                background-color: transparent !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                justify-content: flex-start;
-                align-items: flex-start;
-                min-height: auto;
-                padding: 0;
-            }
-            #form-container, .toolbar {
-                display: none !important;
-            }
-            .documento {
-                display: flex !important;
-                position: relative;
-                width: 297mm;
-                height: 210mm;
-                margin: 0;
-                padding: 20mm;
-                border: none;
-                box-shadow: none;
-                flex-direction: column;
-            }
-            .documento h1, .documento h2, .documento p, .documento li {
-                color: #fff; /* Mantém a cor original */
-            }
-            .documento .destaque {
-                color: gold; /* Mantém a cor original */
-            }
-        }
-
-        /* Estilo para a imagem de fundo */
-        .background-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('https://i.postimg.cc/XNzsbwzg/CARTA-OFICIAL.png');
-            background-size: 100% 100%;
-            background-position: center;
-            z-index: -1;
-        }
-
-        /* COLE ESTE BLOCO NO FINAL DA SUA TAG <style> */
-
-        /* Estilos Específicos da Carta de Alforria */
-        .alforria-documento {
-            width: 297mm; /* A4 paisagem */
-            height: 210mm; /* A4 paisagem */
-            padding: 25mm;
-            position: relative;
-            display: none; /* Começa escondido */
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            background: transparent;
-            margin: 40px auto;
-        }
-
-        .alforria-documento h1, .alforria-documento h2, .alforria-documento p, .alforria-documento li {
-            font-family: 'Montserrat', sans-serif;
-            color: white;
-        }
-        .alforria-documento .destaque {
-            color: #f8e688; 
-        }
-        .alforria-documento .titulo-carta {
-            font-family: 'Pinyon Script', cursive;
-            font-size: 70px;
-            font-weight: 400;
-            color: #f8e688;
-            text-align: center;
-            width: 85%;
-            position: absolute;
-            top: 330px;
-            left: 50%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-            overflow: hidden;
-        }
-        .alforria-documento .content-wrapper {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-top: 350px;
-        }
-        .alforria-documento .content-col {
-            flex: 1;
-            padding: 0 10mm;
-            text-align: center; 
-        }
-        .alforria-documento .secao {
-            margin-bottom: 20px;
-        }
-        .alforria-documento .secao p, .alforria-documento .secao li {
-            font-size: 12px;
-            line-height: 1.5;
-        }
-        .alforria-documento .secao li {
-            list-style-type: none;
-            margin-left: 15px;
-            padding-left: 10px;
-            position: relative;
-        }
-        .alforria-documento .background-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('https://i.postimg.cc/XNzsbwzg/CARTA-OFICIAL.png');
-            background-size: 100% 100%;
-            background-position: center;
-            z-index: -1;
-        }
-
-    </style>
-</head>
-<body>
-    <div>
-        <div id="form-container">
-            <div class="input-group">
-                <label for="nome">Nome Completo:</label>
-                <input type="text" id="nome" placeholder="Seu Nome Completo">
-            </div>
-            <button id="btn-gerar">Gerar Carta de Alforria</button>
-        </div>
-
-        <main class="documento" id="card">
-            <div class="background-image"></div>
-            
-            <p class="titulo-carta" id="nome-valor"></p>
-
-            <div class="content-wrapper">
-                <div class="content-col">
-                    <div class="secao">
-                        <ul>
-                            <li>NÃO SOU MAIS ESCRAVO do que outros pensam de mim</li>
-                            <li>NÃO SOU MAIS ESCRAVO da necessidade de aprovação</li>
-                            <li>NÃO SOU MAIS ESCRAVO do medo da rejeição</li>
-                            <li>NÃO SOU MAIS ESCRAVO da comparação com outros</li>
-                            <li>EU SOU LIVRE porque sou filho de Deus</li>
-                            <li>EU SOU LIVRE porque Cristo me libertou</li>
-                            <li>EU SOU LIVRE para ser quem Deus criou</li>
-                            <li>EU SOU LIVRE para cumprir meu propósito</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="content-col">
-                    <div class="secao">
-                        <p>Não sou o que faço, não sou o que tenho, não sou o que outros pensam de mim.</p>
-                        <p class="destaque">Eu Sou Quem Deus diz que Eu Sou: SEU FILHO AMADO!</p>
-                        <p>Por isso, de pé, ergo a cabeça, olho nos olhos do mundo e declaro:</p>
-                        <p class="destaque" style="font-size: 20px;">EU SOU FILHO DO REI DOS REIS!</p>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <div class="toolbar" id="toolbar">
-            <button id="btn-print">Imprimir / Salvar PDF</button>
-        </div>
-    </div>
-
-<script>
-    // Função para ajustar o tamanho da fonte (do seu arquivo original)
-    function ajustarFonteNome(nome) {
-        const nomeValor = document.getElementById('nome-valor');
-        nomeValor.textContent = nome;
-
-        const containerWidth = nomeValor.offsetWidth;
-        let textWidth = nomeValor.scrollWidth;
-
-        let currentFontSize = 70;
-        const minFontSize = 10;
-        const adjustmentStep = 0.5;
-
-        while (textWidth > containerWidth && currentFontSize > minFontSize) {
-            currentFontSize -= adjustmentStep;
-            nomeValor.style.fontSize = `${currentFontSize}px`;
-            textWidth = nomeValor.scrollWidth;
-        }
+  <style>
+    :root {
+      --doc-width-mm: 297mm; /* largura A4 paisagem */
+      --doc-height-mm: 210mm; /* altura A4 paisagem */
+      --main-green: #006400;
+      /* largura “base” em pixels usada para calcular o scale em telas */
+      --doc-base-width-px: 1120;
     }
 
-    // Função que roda quando a página carrega
-    document.addEventListener('DOMContentLoaded', () => {
-        const cardContainer = document.getElementById('card');
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
 
-        // 1. Pega o nome do usuário que o app React salvou
-        const userName = localStorage.getItem('cartaUserName');
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #0f172a;
+      padding: 16px 0;
+    }
 
-        if (!userName) {
-            document.body.innerHTML = '<h1>Erro: Nome de usuário não encontrado. Volte e tente novamente.</h1>';
-            return;
-        }
+    /* Container geral da página */
+    .page-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
 
-        // 2. Mostra o documento e esconde o formulário
-        const formContainer = document.getElementById('form-container');
-        if (formContainer) {
-          formContainer.style.display = 'none';
-        }
-        cardContainer.style.display = 'flex'; // 'flex' é como está no seu original
+    #form-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      margin-bottom: 8px;
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
 
-        // 3. Coloca o nome no template e ajusta a fonte
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .input-group label {
+      font-weight: bold;
+      color: var(--main-green);
+      font-size: 14px;
+    }
+
+    .input-group input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    #btn-gerar {
+      background: var(--main-green);
+      color: #fff;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    #btn-gerar:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* Wrapper responsivo: faz o documento “encaixar” na tela */
+    .document-wrapper {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Estilos da Carta (documento) – base em pixels para usar scale */
+    .documento {
+      width: calc(var(--doc-base-width-px) * 1px);
+      /* proporção aproximada 297x210 -> ~0.707 */
+      height: calc(var(--doc-base-width-px) * 0.707px);
+      padding: 25mm;
+      border: 1px solid #0f172a;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      position: relative;
+      background: transparent;
+      display: none; /* será ativado via JS */
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      transform-origin: top center;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .documento h1,
+    .documento h2,
+    .documento p,
+    .documento li {
+      font-family: "Montserrat", sans-serif;
+      color: white;
+    }
+
+    .documento .destaque {
+      color: #f8e688;
+    }
+
+    .documento .titulo-carta {
+      font-family: "Pinyon Script", cursive;
+      font-size: 70px;
+      font-weight: 400;
+      color: #f8e688;
+      text-align: center;
+      width: 85%;
+      position: absolute;
+      top: 330px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    /* Conteúdo em duas colunas */
+    .content-wrapper {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 350px;
+    }
+
+    .content-col {
+      flex: 1;
+      padding: 0 10mm;
+      text-align: center;
+    }
+
+    .secao {
+      margin-bottom: 20px;
+    }
+
+    .secao p,
+    .secao li {
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .secao li {
+      list-style-type: none;
+      margin-left: 15px;
+      padding-left: 10px;
+      position: relative;
+    }
+
+    .secao li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      font-weight: bold;
+      color: gold;
+    }
+
+    .assinatura-bloco {
+      margin-top: 30px;
+      text-align: right;
+      width: 100%;
+    }
+
+    /* Barra de ações (se quiser usar manualmente no futuro) */
+    .toolbar {
+      margin-top: 12px;
+      display: none;
+      gap: 8px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    /* Botão de ação – podemos reaproveitar visual de “Baixar Carta” aqui se necessário */
+    button {
+      border: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #f9fafb;
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 25px rgba(34, 197, 94, 0.35);
+      transition: transform 0.15s ease, box-shadow 0.15s ease,
+        filter 0.15s ease;
+    }
+
+    button::before {
+      content: "⬇️";
+      font-size: 16px;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(34, 197, 94, 0.45);
+      filter: brightness(1.03);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 18px rgba(34, 197, 94, 0.35);
+    }
+
+    /* Estilos para impressão (orientação horizontal A4) */
+    @media print {
+      body {
+        background-color: transparent !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        justify-content: flex-start;
+        align-items: flex-start;
+        min-height: auto;
+        padding: 0;
+      }
+
+      #form-container,
+      .toolbar {
+        display: none !important;
+      }
+
+      .document-wrapper {
+        overflow: visible !important;
+      }
+
+      .documento {
+        display: flex !important;
+        position: relative;
+        width: var(--doc-width-mm);
+        height: var(--doc-height-mm);
+        margin: 0;
+        padding: 20mm;
+        border: none;
+        box-shadow: none;
+        flex-direction: column;
+        transform: none !important; /* remove o scale para impressão */
+      }
+
+      .documento h1,
+      .documento h2,
+      .documento p,
+      .documento li {
+        color: #fff;
+      }
+
+      .documento .destaque {
+        color: gold;
+      }
+    }
+
+    /* Imagem de fundo */
+    .background-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("https://i.postimg.cc/XNzsbwzg/CARTA-OFICIAL.png");
+      background-size: 100% 100%;
+      background-position: center;
+      z-index: -1;
+    }
+
+    /* Estilos específicos da alforria (mantidos para compatibilidade) */
+    .alforria-documento {
+      width: var(--doc-width-mm);
+      height: var(--doc-height-mm);
+      padding: 25mm;
+      position: relative;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      background: transparent;
+      margin: 40px auto;
+    }
+
+    .alforria-documento h1,
+    .alforria-documento h2,
+    .alforria-documento p,
+    .alforria-documento li {
+      font-family: "Montserrat", sans-serif;
+      color: white;
+    }
+
+    .alforria-documento .destaque {
+      color: #f8e688;
+    }
+
+    .alforria-documento .titulo-carta {
+      font-family: "Pinyon Script", cursive;
+      font-size: 70px;
+      font-weight: 400;
+      color: #f8e688;
+      text-align: center;
+      width: 85%;
+      position: absolute;
+      top: 330px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .alforria-documento .content-wrapper {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 350px;
+    }
+
+    .alforria-documento .content-col {
+      flex: 1;
+      padding: 0 10mm;
+      text-align: center;
+    }
+
+    .alforria-documento .secao {
+      margin-bottom: 20px;
+    }
+
+    .alforria-documento .secao p,
+    .alforria-documento .secao li {
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .alforria-documento .secao li {
+      list-style-type: none;
+      margin-left: 15px;
+      padding-left: 10px;
+      position: relative;
+    }
+
+    .alforria-documento .background-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("https://i.postimg.cc/XNzsbwzg/CARTA-OFICIAL.png");
+      background-size: 100% 100%;
+      background-position: center;
+      z-index: -1;
+    }
+
+    /* Pequenos ajustes em telas muito estreitas (segurança extra) */
+    @media (max-width: 480px) {
+      body {
+        padding: 12px 0;
+      }
+
+      #form-container {
+        margin-bottom: 4px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-container">
+    <div id="form-container">
+      <div class="input-group">
+        <label for="nome">Nome Completo:</label>
+        <input type="text" id="nome" placeholder="Seu Nome Completo" />
+      </div>
+      <button id="btn-gerar">Baixar Carta (PDF)</button>
+    </div>
+
+    <div class="document-wrapper">
+      <main class="documento" id="card">
+        <div class="background-image"></div>
+
+        <p class="titulo-carta" id="nome-valor"></p>
+
+        <div class="content-wrapper">
+          <div class="content-col">
+            <div class="secao">
+              <ul>
+                <li>NÃO SOU MAIS ESCRAVO do que outros pensam de mim</li>
+                <li>NÃO SOU MAIS ESCRAVO da necessidade de aprovação</li>
+                <li>NÃO SOU MAIS ESCRAVO do medo da rejeição</li>
+                <li>NÃO SOU MAIS ESCRAVO da comparação com outros</li>
+                <li>EU SOU LIVRE porque sou filho de Deus</li>
+                <li>EU SOU LIVRE porque Cristo me libertou</li>
+                <li>EU SOU LIVRE para ser quem Deus criou</li>
+                <li>EU SOU LIVRE para cumprir meu propósito</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="content-col">
+            <div class="secao">
+              <p>
+                Não sou o que faço, não sou o que tenho, não sou o que outros
+                pensam de mim.
+              </p>
+              <p class="destaque">
+                Eu Sou Quem Deus diz que Eu Sou: SEU FILHO AMADO!
+              </p>
+              <p>
+                Por isso, de pé, ergo a cabeça, olho nos olhos do mundo e
+                declaro:
+              </p>
+              <p class="destaque" style="font-size: 20px">
+                EU SOU FILHO DO REI DOS REIS!
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div class="toolbar" id="toolbar">
+      <button id="btn-print">Baixar Carta (PDF)</button>
+    </div>
+  </div>
+
+  <script>
+    // Ajusta tamanho da fonte do nome para caber no título
+    function ajustarFonteNome(nome) {
+      const nomeValor = document.getElementById("nome-valor");
+      if (!nomeValor) return;
+
+      nomeValor.textContent = nome;
+
+      const containerWidth = nomeValor.offsetWidth;
+      let textWidth = nomeValor.scrollWidth;
+
+      let currentFontSize = 70;
+      const minFontSize = 10;
+      const adjustmentStep = 0.5;
+
+      while (textWidth > containerWidth && currentFontSize > minFontSize) {
+        currentFontSize -= adjustmentStep;
+        nomeValor.style.fontSize = currentFontSize + "px";
+        textWidth = nomeValor.scrollWidth;
+      }
+    }
+
+    // Escala responsiva do documento para caber na largura da tela
+    function ajustarEscalaDocumento() {
+      const cardContainer = document.getElementById("card");
+      if (!cardContainer) return;
+
+      const baseWidth = parseFloat(
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--doc-base-width-px")
+          .trim()
+      );
+      if (!baseWidth) return;
+
+      const availableWidth = window.innerWidth - 32; // margem de respiro
+      const scale = Math.min(availableWidth / baseWidth, 1);
+
+      cardContainer.style.transform = "scale(" + scale + ")";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const cardContainer = document.getElementById("card");
+      const formContainer = document.getElementById("form-container");
+      const btnGerar = document.getElementById("btn-gerar");
+
+      // Nome salvo pelo app React
+      const storedUserName = localStorage.getItem("cartaUserName");
+
+      const nomeFinal =
+        storedUserName && storedUserName.trim().length > 0
+          ? storedUserName
+          : "";
+
+      if (nomeFinal) {
+        // Se veio do app, esconde formulário e mostra carta direto
+        if (formContainer) formContainer.style.display = "none";
+        if (cardContainer) cardContainer.style.display = "flex";
+
         setTimeout(() => {
-          ajustarFonteNome(userName);
+          ajustarFonteNome(nomeFinal);
+          ajustarEscalaDocumento();
         }, 10);
 
-        // 4. Abre a janela de impressão/salvar PDF
-        // Usamos um timeout para dar tempo da imagem de fundo carregar
+        // Imprime / salva PDF
         setTimeout(() => {
+          window.print();
+        }, 500);
+      } else {
+        // Modo "manual": usuário digita o nome e clica no botão
+        if (cardContainer) cardContainer.style.display = "flex";
+        ajustarEscalaDocumento();
+
+        if (btnGerar) {
+          btnGerar.addEventListener("click", () => {
+            const inputNome = document.getElementById("nome");
+            const valor =
+              inputNome && inputNome.value.trim().length > 0
+                ? inputNome.value.trim()
+                : "Seu Nome Aqui";
+
+            ajustarFonteNome(valor);
+            ajustarEscalaDocumento();
             window.print();
-        }, 500); // 0.5 segundos de espera
+          });
+        }
+      }
+
+      window.addEventListener("resize", ajustarEscalaDocumento);
+
+      // Garante escala correta após impressão
+      window.addEventListener("afterprint", ajustarEscalaDocumento);
+      window.addEventListener("beforeprint", () => {
+        const card = document.getElementById("card");
+        if (card) card.style.transform = "none";
+      });
     });
-</script>
+  </script>
 </body>
 </html>
