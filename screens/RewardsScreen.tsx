@@ -101,37 +101,49 @@ const RewardsScreen: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-3">
+              {/* input de arquivo escondido, marcado como “decorativo” pra acessibilidade */}
               <input
                 type="file"
                 accept="image/*"
                 ref={fileInputRef}
                 onChange={handlePhotoUpload}
                 className="hidden"
+                aria-hidden="true"
+                tabIndex={-1}
               />
 
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 p-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2 shadow-lg"
+                className="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded-lg font-bold transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2"
+                aria-label={photo ? 'Alterar foto da identidade espiritual' : 'Carregar foto 3x4 para a identidade espiritual'}
               >
-                <i data-lucide="upload" className="w-5 h-5" />
+                <i data-lucide="upload"></i>
                 {photo ? 'Alterar Foto' : 'Carregar Foto 3x4'}
               </button>
 
+              <label className="sr-only" htmlFor="sexo-identidade">
+                Sexo na identidade espiritual
+              </label>
               <select
+                id="sexo-identidade"
                 value={sexo}
                 onChange={(e) => setSexo(e.target.value)}
-                className="bg-gray-700/80 border border-gray-600 rounded-lg p-3 w-full text-center text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="bg-gray-700 p-3 rounded-lg w-full text-center"
               >
                 <option value="Masculino">Masculino</option>
                 <option value="Feminino">Feminino</option>
               </select>
 
+              <label className="sr-only" htmlFor="data-nascimento-identidade">
+                Data de nascimento
+              </label>
               <input
+                id="data-nascimento-identidade"
                 type="date"
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
-                className="bg-gray-700/80 border border-gray-600 rounded-lg p-3 w-full text-center text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="bg-gray-700 p-3 rounded-lg w-full text-center"
               />
             </div>
 
