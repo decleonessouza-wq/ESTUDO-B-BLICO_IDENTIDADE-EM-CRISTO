@@ -10,7 +10,7 @@
 .documento {
   font-family: Arial, sans-serif;
   /* Garante que o fundo não seja transparente no download */
-  background-color: white; 
+  background-color: white;
 }
 
 /* Estilos da Carteira (card) */
@@ -22,6 +22,25 @@
   position: relative;
   /* AJUSTE: Caminho para a imagem na sua pasta public/images */
   background: url('/images/fundo-identidade.png') no-repeat center/cover;
+
+  /* 🔹 AJUSTES DE RESPONSIVIDADE */
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* 🔹 Escala suave em telas menores para caber melhor */
+@media screen and (max-width: 768px) {
+  .documento {
+    transform: scale(0.9);
+    transform-origin: top center;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .documento {
+    transform: scale(0.8);
+    transform-origin: top center;
+  }
 }
 
 .frente,
@@ -40,7 +59,7 @@
 
 /* Este é o seletor CORRIGIDO para o LOGO DA IGREJA (Direita) */
 .frente .logo-governo {
-  position: absolute; 
+  position: absolute;
   top: 1mm; /* Ajustado para alinhar com o brasão */
   right: 2mm;
   width: 18mm; /* Ajustado para alinhar com o brasão */
@@ -105,15 +124,14 @@
   top: 30mm;
   left: 33mm;
   right: 3mm;
-
-  
 }
+
 .frente .linha {
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.2mm;
- 
 }
+
 .frente .campo {
   width: 50%;
   text-align: left;
@@ -126,10 +144,20 @@
 }
 .frente .campo .valor {
   font-size: 2.2mm;
-  white-space: nowrap;
   font-weight: bold;
   color: #0f0f0f;
+  /* por padrão, mantém em uma linha no desktop */
+  white-space: nowrap;
 }
+
+/* 🔹 Em telas menores, deixa os valores quebrarem linha para não cortar texto */
+@media screen and (max-width: 768px) {
+  .frente .campo .valor {
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
 .frente .assinatura {
   position: absolute;
   bottom: 1mm;
@@ -181,7 +209,7 @@
 .verso .campo-exp .label {
   font-weight: bold;
   font-size: 2.4mm;
-  color: #000000
+  color: #000000;
 }
 .verso .campo-exp .valor {
   font-size: 2.4mm;
