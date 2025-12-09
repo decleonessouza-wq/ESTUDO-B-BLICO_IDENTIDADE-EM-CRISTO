@@ -1,308 +1,415 @@
-/* src/components/NovaIdentidade.css */
+/* Conteúdo para: src/components/NovaIdentidade.css */
 
-:root {
-  --novaId-bg: #ecf7e4;
-  --novaId-green-strong: #008f3b;
-  --novaId-green-soft: #3ba85b;
-  --novaId-main-text: #06310f;
-  --novaId-border: #cbd5d1;
-  --novaId-label: #4b5563;
-}
+/* ========= RESET & LAYOUT BASE ========= */
 
-/* wrapper geral da tela */
-.novaId-wrapper {
-  width: 100%;
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+  background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+  color: #111827;
   display: flex;
   justify-content: center;
-  padding: 1rem;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-/* card com proporção fixa (ajuda a não deformar no celular) */
-.novaId-card {
-  width: min(100%, 420px);
-  aspect-ratio: 3 / 5;
-  background: radial-gradient(circle at top, #f8fff1 0, #e3f3d5 40%, #d4e9c8 100%);
-  border-radius: 18px;
-  padding: 0.7rem 0.9rem;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.35);
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  color: var(--novaId-main-text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  box-sizing: border-box;
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+/* Variáveis para tamanho do documento (frente + verso empilhados) */
+:root {
+  --doc-width: 102mm;
+  --doc-height: 140mm;
+  --doc-half-height: 70mm;
+}
+
+/* ========= DOCUMENTO GERAL ========= */
+
+.documento {
   position: relative;
+  width: var(--doc-width);
+  height: var(--doc-height);
+  background: radial-gradient(circle at top, #fafafa 0, #e5e7eb 38%, #d1d5db 90%);
+  padding: 4mm;
+  border-radius: 4mm;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(0, 0, 0, 0.35);
   overflow: hidden;
 }
 
-/* TEXTOS USAM CLAMP PARA ESCALAR BEM EM CELULAR E PC */
-.novaId-card,
-.novaId-card * {
-  font-size: clamp(0.55rem, 1.5vw, 0.8rem);
-}
+/* FRAGMENTAÇÃO: frente e verso, um em cima do outro */
 
-/* ---------- CABEÇALHO ---------- */
-
-.novaId-header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.novaId-header-top {
-  display: flex;
-  flex-direction: column;
-  gap: 0.05rem;
-  align-items: center;
-  text-align: center;
-}
-
-.novaId-header-titleMain {
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--novaId-green-strong);
-  font-size: clamp(0.75rem, 2.2vw, 1rem);
-}
-
-.novaId-header-sub {
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--novaId-green-soft);
-}
-
-.novaId-header-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-top: 0.25rem;
-}
-
-.novaId-header-org {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  font-size: clamp(0.55rem, 1.6vw, 0.75rem);
-}
-
-.novaId-header-logo {
-  width: clamp(32px, 12vw, 50px);
-  aspect-ratio: 1 / 1;
-  border-radius: 999px;
-  border: 2px solid var(--novaId-green-strong);
-  background: radial-gradient(circle at center, #fff 0, #e2e8f0 45%, #cbd5f5 100%);
-}
-
-/* ---------- CORPO PRINCIPAL (FOTO + DADOS) ---------- */
-
-.novaId-body {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
-  gap: 0.5rem;
-  align-items: flex-start;
-  margin-top: 0.25rem;
-}
-
-/* Foto 3x4 */
-.novaId-photoBox {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-}
-
-.novaId-photoImg,
-.novaId-photoPlaceholder {
+.frente,
+.verso {
+  position: absolute;
+  left: 0;
   width: 100%;
-  max-width: 120px;
-  aspect-ratio: 3 / 4;
-  border-radius: 16px;
-  border: 3px solid #ffffff;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.45);
-  object-fit: cover;
-  background: #111827;
+  height: var(--doc-half-height);
+  padding: 3mm 5mm;
+  box-sizing: border-box;
 }
 
-.novaId-photoPlaceholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #e5e7eb;
-  font-weight: 600;
+/* Frente na parte de cima */
+.frente {
+  top: 0;
+  background: radial-gradient(circle at center, #fefefe 15%, #f3f4f6 55%, #e5e7eb 100%);
 }
 
-/* Dados textuais */
-.novaId-data {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+/* Verso na parte de baixo */
+.verso {
+  top: calc(var(--doc-half-height) + 2mm);
+  background: radial-gradient(circle at center, #fefefe 0, #f3f4f6 45%, #e5e7eb 100%);
 }
 
-.novaId-docTitle {
+/* ========= CABEÇALHO DA FRENTE ========= */
+
+.frente header {
+  text-align: center;
+  margin-bottom: 3mm;
+  position: relative;
+}
+
+.frente h1 {
+  font-size: 4mm;
   font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #047857;
+  margin: 0;
   text-transform: uppercase;
-  text-align: left;
-  font-size: clamp(0.7rem, 2vw, 0.9rem);
 }
 
-.novaId-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-/* filas de campos */
-.novaId-gridRow {
-  display: flex;
-  flex-direction: column;
-  gap: 0.05rem;
-}
-
-.novaId-gridRow--twoCols {
-  display: grid;
-  grid-template-columns: 1.1fr 1.2fr;
-  gap: 0.25rem;
-}
-
-/* Informação individual */
-.novaId-field {
-  display: flex;
-  flex-direction: column;
-}
-
-.novaId-label {
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--novaId-label);
-  font-size: clamp(0.5rem, 1.3vw, 0.65rem);
-}
-
-.novaId-value {
-  font-weight: 600;
-  line-height: 1.1;
-}
-
-.novaId-value--strong {
+.subtitulo-governo {
+  font-size: 3.2mm;
   font-weight: 700;
-  font-size: clamp(0.7rem, 2.1vw, 0.95rem);
+  color: #047857;
+  margin-top: 0.8mm;
 }
 
-/* ---------- ASSINATURA TITULAR ---------- */
+.subtitulo-secretaria {
+  font-size: 2.4mm;
+  color: #374151;
+  margin-top: 0.8mm;
+  line-height: 1.3;
+}
 
-.novaId-assinaturaTitular {
-  margin-top: 0.2rem;
+.frente h2 {
+  margin: 1.8mm 0 0.5mm;
+  font-size: 3.2mm;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #111827;
+}
+
+.frente h3 {
+  margin: 0;
+  font-size: 2.5mm;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+/* ========= LOGO / MARCAS D’ÁGUA ========= */
+
+.logo-brasao {
+  position: absolute;
+  top: 5mm;
+  left: 7mm;
+  width: 18mm;
+  height: 18mm;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, #d1fae5 0, #34d399 45%, #047857 100%);
+  box-shadow:
+    0 0 0 1.2mm #ecfdf5,
+    0 0 0 2.3mm rgba(34, 197, 94, 0.5);
+  opacity: 0.8;
+}
+
+.logo-governo {
+  position: absolute;
+  top: 10mm;
+  right: 8mm;
+  width: 16mm;
+  height: 16mm;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, #eef2ff 0, #6366f1 45%, #312e81 100%);
+  box-shadow:
+    0 0 0 1mm #eef2ff,
+    0 0 0 2mm rgba(79, 70, 229, 0.45);
+  opacity: 0.85;
+}
+
+/* ========= FOTO ========= */
+
+.foto {
+  position: absolute;
+  top: 32mm;
+  left: 7mm;
+  width: 28mm;
+  height: 36mm;
+  border-radius: 3mm;
+  background-color: #111827;
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.4),
+    0 0 0 1mm #f9fafb,
+    0 0 0 2mm rgba(31, 41, 55, 0.9);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+/* ========= CONTEÚDO DA FRENTE ========= */
+
+.conteudo {
+  position: absolute;
+  top: 30mm;
+  left: 40mm;
+  right: 5mm;
+  font-size: 2.4mm;
+  color: #111827;
+}
+
+.linha {
+  display: flex;
+  gap: 3mm;
+  margin-bottom: 2mm;
+}
+
+/* Cada campo (Nome, Nascimento, etc.) */
+.campo {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
+  min-width: 0;
 }
 
-.novaId-assinaturaLinha {
-  width: 70%;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.8);
+.frente .campo .label {
+  font-size: 2mm;
+  text-transform: uppercase;
+  color: #4b5563;
+  margin-bottom: 0.5mm;
 }
 
-.novaId-assinaturaLabel {
-  font-size: clamp(0.5rem, 1.4vw, 0.7rem);
+/* Ajuste importante para não cortar nomes longos */
+.frente .campo .valor {
+  font-size: 2.2mm;
+  font-weight: bold;
+  color: #0f0f0f;
+  white-space: normal;        /* deixa quebrar linha se precisar */
+  line-height: 2.6mm;
+  word-break: break-word;     /* quebra palavras muito grandes */
 }
 
-/* ---------- ÁREA INFERIOR (QR + DADOS) ---------- */
+/* ========= ASSINATURA (FRENTE) ========= */
 
-.novaId-bottom {
-  display: grid;
-  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.4fr);
-  gap: 0.5rem;
-  margin-top: 0.25rem;
-}
-
-.novaId-qrBox {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.novaId-qrFake {
-  width: min(100%, 90px);
-  aspect-ratio: 1 / 1;
-  background-image: repeating-linear-gradient(
-      45deg,
-      #000 0,
-      #000 2px,
-      transparent 2px,
-      transparent 4px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      #000 0,
-      #000 2px,
-      transparent 2px,
-      transparent 4px
-    );
-  background-size: 6px 6px, 6px 6px;
-  border-radius: 4px;
-}
-
-/* dados de expedição */
-.novaId-bottomData {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-/* ---------- RODAPÉ ---------- */
-
-.novaId-footer {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.2rem;
+.assinatura {
+  position: absolute;
+  bottom: 5mm;
+  left: 40mm;
+  right: 5mm;
   text-align: center;
 }
 
-.novaId-footerLinha {
-  width: 80%;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.7);
+.assinatura-linha {
+  border-bottom: 0.3mm solid #111827;
+  margin-bottom: 1mm;
 }
 
-.novaId-footerAssinatura {
-  font-family: "Dancing Script", "Pacifico", cursive;
-  font-size: clamp(0.8rem, 2.3vw, 1.1rem);
-  color: var(--novaId-green-strong);
+.assinatura-label {
+  font-size: 2mm;
+  color: #374151;
 }
 
-.novaId-footerSelos {
+/* ========= VERSO ========= */
+
+.conteudo-superior-verso {
+  position: relative;
+  width: 100%;
+  height: 38mm;
+  border-radius: 3mm;
+  overflow: hidden;
+  background: radial-gradient(circle at center, #fefce8 0, #fef3c7 40%, #fde68a 100%);
+  box-shadow: inset 0 0 0 0.5mm rgba(180, 83, 9, 0.4);
+}
+
+.mapa-fundo {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 30% 30%, rgba(248, 250, 252, 0.85) 0, transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(248, 250, 252, 0.75) 0, transparent 55%),
+    repeating-linear-gradient(
+      135deg,
+      rgba(15, 23, 42, 0.05) 0,
+      rgba(15, 23, 42, 0.05) 1mm,
+      transparent 1mm,
+      transparent 2mm
+    );
+  opacity: 0.8;
+  mix-blend-mode: multiply;
+}
+
+/* QR / Dados de expedição */
+
+.dados-expedicao {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 3mm;
+  padding: 3mm 4mm;
+  z-index: 1;
+}
+
+.campo-exp {
+  margin-bottom: 1mm;
+}
+
+.campo-exp .label {
+  font-size: 2mm;
+  text-transform: uppercase;
+  color: #4b5563;
+}
+
+.campo-exp .valor {
+  font-size: 2.2mm;
+  font-weight: bold;
+  color: #111827;
+}
+
+/* ========= ASSINATURA DIVINA ========= */
+
+.assinatura-divina {
+  margin-top: 2mm;
+  text-align: center;
+}
+
+.assinatura-divina-img {
+  font-family: 'Cedarville Cursive', 'Pacifico', cursive;
+  font-size: 6mm;
+  color: #047857;
+  margin-bottom: 1mm;
+}
+
+.assinatura-divina-label {
+  font-size: 2.2mm;
+  color: #374151;
+}
+
+/* ========= VALIDADE + ÍCONES ========= */
+
+.validade-container {
+  margin-top: 2mm;
+  display: grid;
+  grid-template-columns: 1fr 2.5fr 1fr;
+  gap: 1.5mm;
+  align-items: center;
+}
+
+.espaco-figura {
+  width: 8mm;
+  height: 8mm;
+  border-radius: 1.5mm;
+  border: 0.4mm solid #10b981;
+  background: radial-gradient(circle at center, #d1fae5 0, #6ee7b7 45%, #047857 100%);
+  box-shadow:
+    0 0 0 0.5mm rgba(16, 185, 129, 0.5),
+    inset 0 0 0 0.5mm #ecfdf5;
+}
+
+.validade {
+  font-size: 2.3mm;
+  text-align: center;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* ========= RODAPÉ DO VERSO ========= */
+
+.rodape-verso {
+  margin-top: 2mm;
   display: flex;
-  gap: 0.25rem;
-  margin-top: 0.1rem;
+  flex-direction: column;
+  gap: 2mm;
 }
 
-.novaId-footerSelo {
-  width: clamp(16px, 4vw, 22px);
-  aspect-ratio: 1 / 1;
-  border-radius: 4px;
-  border: 1px solid rgba(15, 23, 42, 0.4);
-  background: linear-gradient(135deg, #e5f4d6, #c0e5b2);
+.versiculo {
+  font-size: 2.1mm;
+  text-align: center;
+  color: #111827;
+  line-height: 1.4;
+  margin: 2mm 0 0; /* sem margem negativa para evitar corte */
 }
 
-.novaId-footerVerso {
-  margin-top: 0.15rem;
-  font-size: clamp(0.5rem, 1.4vw, 0.75rem);
-  max-width: 95%;
+.versiculo strong {
+  display: block;
+  margin-top: 1mm;
+  font-weight: 700;
 }
 
-/* ---------- AJUSTES PARA TELAS MUITO ESTREITAS ---------- */
+.rodape-container {
+  display: grid;
+  grid-template-columns: 1.2fr auto 1.2fr;
+  align-items: center;
+  gap: 2mm;
+}
+
+.rodape-texto-esquerda,
+.rodape-texto-direita {
+  font-size: 2mm;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+}
+
+.logo-rodape {
+  width: 10mm;
+  height: 10mm;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, #fee2e2 0, #f97316 30%, #b91c1c 80%);
+  box-shadow:
+    0 0 0 0.6mm #fef2f2,
+    0 0 0 1.6mm rgba(248, 113, 113, 0.7);
+}
+
+/* ========= BORDAS / EFEITOS EXTRAS ========= */
+
+.documento::before {
+  content: '';
+  position: absolute;
+  inset: 3mm;
+  border-radius: 3.5mm;
+  border: 0.4mm dashed rgba(15, 23, 42, 0.2);
+  pointer-events: none;
+}
+
+/* ========= RESPONSIVIDADE ========= */
+/* Mantém o modelo, mas evita cortes em telas menores */
+
+@media (max-width: 768px) {
+  body {
+    padding: 12px;
+  }
+
+  .documento {
+    transform-origin: top center;
+  }
+}
+
+@media (max-width: 480px) {
+  .documento {
+    transform: scale(0.92);
+  }
+}
 
 @media (max-width: 360px) {
-  .novaId-card {
-    padding: 0.6rem 0.7rem;
-  }
-
-  .novaId-body {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
-  }
-
-  .novaId-bottom {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr);
+  .documento {
+    transform: scale(0.85);
   }
 }
