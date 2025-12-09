@@ -1,415 +1,267 @@
 /* Conteúdo para: src/components/NovaIdentidade.css */
 
-/* ========= RESET & LAYOUT BASE ========= */
-
-body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont,
-    'Segoe UI', sans-serif;
-  background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
-  color: #111827;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  min-height: 100vh;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: inherit;
-}
-
-/* Variáveis para tamanho do documento (frente + verso empilhados) */
 :root {
   --doc-width: 102mm;
-  --doc-height: 140mm;
-  --doc-half-height: 70mm;
+  --doc-total-height: 135.8mm;
+  --doc-half-height: 67.9mm;
 }
 
-/* ========= DOCUMENTO GERAL ========= */
-
+/* Precisamos dar um 'font-family' base, já que ele não herda do 'body' */
 .documento {
-  position: relative;
-  width: var(--doc-width);
-  height: var(--doc-height);
-  background: radial-gradient(circle at top, #fafafa 0, #e5e7eb 38%, #d1d5db 90%);
-  padding: 4mm;
-  border-radius: 4mm;
-  box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(0, 0, 0, 0.35);
-  overflow: hidden;
+  font-family: Arial, sans-serif;
+  /* Garante que o fundo não seja transparente no download */
+  background-color: white; 
 }
 
-/* FRAGMENTAÇÃO: frente e verso, um em cima do outro */
+/* Estilos da Carteira (card) */
+.documento {
+  width: var(--doc-width);
+  height: var(--doc-total-height);
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  position: relative;
+  /* AJUSTE: Caminho para a imagem na sua pasta public/images */
+  background: url('/images/fundo-identidade.png') no-repeat center/cover;
+}
 
 .frente,
 .verso {
-  position: absolute;
-  left: 0;
   width: 100%;
   height: var(--doc-half-height);
-  padding: 3mm 5mm;
-  box-sizing: border-box;
+  position: absolute;
+  left: 0;
 }
 
-/* Frente na parte de cima */
 .frente {
   top: 0;
-  background: radial-gradient(circle at center, #fefefe 15%, #f3f4f6 55%, #e5e7eb 100%);
+  padding: 3mm;
+  border-bottom: 1px dashed #aaa;
 }
 
-/* Verso na parte de baixo */
-.verso {
-  top: calc(var(--doc-half-height) + 2mm);
-  background: radial-gradient(circle at center, #fefefe 0, #f3f4f6 45%, #e5e7eb 100%);
+/* Este é o seletor CORRIGIDO para o LOGO DA IGREJA (Direita) */
+.frente .logo-governo {
+  position: absolute; 
+  top: 1mm; /* Ajustado para alinhar com o brasão */
+  right: 2mm;
+  width: 18mm; /* Ajustado para alinhar com o brasão */
+  height: 18mm; /* Ajustado para alinhar com o brasão */
+  background: url('/images/IGREJA-LOGO.png') no-repeat center/contain;
 }
 
-/* ========= CABEÇALHO DA FRENTE ========= */
+/* --- FIM DA SUBSTITUIÇÃO --- */
 
 .frente header {
   text-align: center;
-  margin-bottom: 3mm;
-  position: relative;
+  line-height: 1.2;
+  color: #006400;
 }
-
-.frente h1 {
-  font-size: 4mm;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #047857;
-  margin: 0;
+.frente header h1 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 4.5mm;
+  font-weight: 700;
   text-transform: uppercase;
 }
-
-.subtitulo-governo {
-  font-size: 3.2mm;
-  font-weight: 700;
-  color: #047857;
-  margin-top: 0.8mm;
-}
-
-.subtitulo-secretaria {
+.frente .subtitulo-governo {
+  font-family: 'Montserrat', sans-serif;
   font-size: 2.4mm;
-  color: #374151;
-  margin-top: 0.8mm;
-  line-height: 1.3;
-}
-
-.frente h2 {
-  margin: 1.8mm 0 0.5mm;
-  font-size: 3.2mm;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: bold;
   text-transform: uppercase;
-  color: #111827;
+}
+.frente .subtitulo-secretaria {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2.2mm;
+  color: black;
+  margin-top: 3mm;
+  line-height: 0.8;
+}
+.frente header h2 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 4mm;
+  font-weight: bold;
+  color: #222;
+  margin-top: 2mm;
+}
+.frente header h3 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2.2mm;
+  color: #006400;
+  margin-top: 1mm;
 }
 
-.frente h3 {
-  margin: 0;
-  font-size: 2.5mm;
-  font-weight: 500;
-  color: #6b7280;
-}
-
-/* ========= LOGO / MARCAS D’ÁGUA ========= */
-
-.logo-brasao {
+.frente .foto {
   position: absolute;
-  top: 5mm;
-  left: 7mm;
-  width: 18mm;
-  height: 18mm;
-  border-radius: 50%;
-  background: radial-gradient(circle at center, #d1fae5 0, #34d399 45%, #047857 100%);
-  box-shadow:
-    0 0 0 1.2mm #ecfdf5,
-    0 0 0 2.3mm rgba(34, 197, 94, 0.5);
-  opacity: 0.8;
-}
-
-.logo-governo {
-  position: absolute;
-  top: 10mm;
-  right: 8mm;
-  width: 16mm;
-  height: 16mm;
-  border-radius: 50%;
-  background: radial-gradient(circle at center, #eef2ff 0, #6366f1 45%, #312e81 100%);
-  box-shadow:
-    0 0 0 1mm #eef2ff,
-    0 0 0 2mm rgba(79, 70, 229, 0.45);
-  opacity: 0.85;
-}
-
-/* ========= FOTO ========= */
-
-.foto {
-  position: absolute;
-  top: 32mm;
-  left: 7mm;
-  width: 28mm;
-  height: 36mm;
+  top: 26mm;
+  left: 4mm;
+  width: 24mm;
+  height: 32mm;
   border-radius: 3mm;
-  background-color: #111827;
-  box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.4),
-    0 0 0 1mm #f9fafb,
-    0 0 0 2mm rgba(31, 41, 55, 0.9);
+  background-color: #fff;
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  overflow: hidden;
 }
-
-/* ========= CONTEÚDO DA FRENTE ========= */
-
-.conteudo {
+.frente .conteudo {
   position: absolute;
   top: 30mm;
-  left: 40mm;
-  right: 5mm;
-  font-size: 2.4mm;
-  color: #111827;
-}
+  left: 33mm;
+  right: 3mm;
 
-.linha {
+  
+}
+.frente .linha {
   display: flex;
-  gap: 3mm;
-  margin-bottom: 2mm;
+  justify-content: space-between;
+  margin-bottom: 0.2mm;
+ 
 }
-
-/* Cada campo (Nome, Nascimento, etc.) */
-.campo {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+.frente .campo {
+  width: 50%;
+  text-align: left;
 }
-
 .frente .campo .label {
   font-size: 2mm;
-  text-transform: uppercase;
-  color: #4b5563;
-  margin-bottom: 0.5mm;
+  font-weight: bold;
+  color: #006400;
+  line-height: 1.1;
 }
-
-/* Ajuste importante para não cortar nomes longos */
 .frente .campo .valor {
   font-size: 2.2mm;
+  white-space: nowrap;
   font-weight: bold;
   color: #0f0f0f;
-  white-space: normal;        /* deixa quebrar linha se precisar */
-  line-height: 2.6mm;
-  word-break: break-word;     /* quebra palavras muito grandes */
 }
-
-/* ========= ASSINATURA (FRENTE) ========= */
-
-.assinatura {
+.frente .assinatura {
   position: absolute;
-  bottom: 5mm;
-  left: 40mm;
-  right: 5mm;
+  bottom: 1mm;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
+  width: 45mm;
 }
-
-.assinatura-linha {
-  border-bottom: 0.3mm solid #111827;
-  margin-bottom: 1mm;
+.frente .assinatura-linha {
+  border-top: 1px solid #000;
+  margin-bottom: 0.5mm;
 }
-
-.assinatura-label {
-  font-size: 2mm;
-  color: #374151;
-}
-
-/* ========= VERSO ========= */
-
-.conteudo-superior-verso {
-  position: relative;
-  width: 100%;
-  height: 38mm;
-  border-radius: 3mm;
-  overflow: hidden;
-  background: radial-gradient(circle at center, #fefce8 0, #fef3c7 40%, #fde68a 100%);
-  box-shadow: inset 0 0 0 0.5mm rgba(180, 83, 9, 0.4);
-}
-
-.mapa-fundo {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle at 30% 30%, rgba(248, 250, 252, 0.85) 0, transparent 55%),
-    radial-gradient(circle at 70% 70%, rgba(248, 250, 252, 0.75) 0, transparent 55%),
-    repeating-linear-gradient(
-      135deg,
-      rgba(15, 23, 42, 0.05) 0,
-      rgba(15, 23, 42, 0.05) 1mm,
-      transparent 1mm,
-      transparent 2mm
-    );
-  opacity: 0.8;
-  mix-blend-mode: multiply;
-}
-
-/* QR / Dados de expedição */
-
-.dados-expedicao {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 3mm;
-  padding: 3mm 4mm;
-  z-index: 1;
-}
-
-.campo-exp {
-  margin-bottom: 1mm;
-}
-
-.campo-exp .label {
-  font-size: 2mm;
-  text-transform: uppercase;
-  color: #4b5563;
-}
-
-.campo-exp .valor {
+.frente .assinatura-label {
   font-size: 2.2mm;
-  font-weight: bold;
-  color: #111827;
+  color: #444;
 }
 
-/* ========= ASSINATURA DIVINA ========= */
-
-.assinatura-divina {
-  margin-top: 2mm;
-  text-align: center;
+.verso {
+  top: var(--doc-half-height);
+  padding: 3mm;
+  position: relative;
 }
 
-.assinatura-divina-img {
-  font-family: 'Cedarville Cursive', 'Pacifico', cursive;
-  font-size: 6mm;
-  color: #047857;
-  margin-bottom: 1mm;
-}
-
-.assinatura-divina-label {
-  font-size: 2.2mm;
-  color: #374151;
-}
-
-/* ========= VALIDADE + ÍCONES ========= */
-
-.validade-container {
-  margin-top: 2mm;
-  display: grid;
-  grid-template-columns: 1fr 2.5fr 1fr;
-  gap: 1.5mm;
-  align-items: center;
-}
-
-.espaco-figura {
-  width: 8mm;
-  height: 8mm;
-  border-radius: 1.5mm;
-  border: 0.4mm solid #10b981;
-  background: radial-gradient(circle at center, #d1fae5 0, #6ee7b7 45%, #047857 100%);
-  box-shadow:
-    0 0 0 0.5mm rgba(16, 185, 129, 0.5),
-    inset 0 0 0 0.5mm #ecfdf5;
-}
-
-.validade {
-  font-size: 2.3mm;
-  text-align: center;
-  font-weight: 600;
-  color: #111827;
-}
-
-/* ========= RODAPÉ DO VERSO ========= */
-
-.rodape-verso {
-  margin-top: 2mm;
+.verso .conteudo-superior-verso {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
   gap: 2mm;
+  position: relative;
+  top: 3mm;
+  left: -7mm;
+}
+.verso .mapa-fundo {
+  width: 34mm;
+  height: 23mm;
+  position: relative;
+  top: 0mm;
+  left: 2.7mm;
+  /* AJUSTE: Caminho para a imagem na sua pasta public/images */
+  background: url('/images/ESTUDO-corte.png') no-repeat center center;
+  background-size: contain;
+  opacity: 0.9;
+}
+.verso .dados-expedicao {
+  text-align: left;
+}
+.verso .campo-exp {
+  margin-bottom: 1.1mm;
+}
+.verso .campo-exp .label {
+  font-weight: bold;
+  font-size: 2.4mm;
+  color: #000000
+}
+.verso .campo-exp .valor {
+  font-size: 2.4mm;
+  color: #006400;
+  font-weight: bold;
 }
 
-.versiculo {
-  font-size: 2.1mm;
+.verso .assinatura-divina {
+  margin-top: 4mm;
   text-align: center;
-  color: #111827;
-  line-height: 1.4;
-  margin: 2mm 0 0; /* sem margem negativa para evitar corte */
+  color: #006400;
 }
-
-.versiculo strong {
+.verso .assinatura-divina-img {
+  font-family: 'Brush Script MT', cursive;
+  font-size: 6mm;
+  color: black;
+}
+.verso .assinatura-divina-label {
+  font-size: 2.2mm;
+  border-top: 1px solid #006400;
+  width: 40mm;
   display: block;
-  margin-top: 1mm;
-  font-weight: 700;
+  margin: -2mm auto 0;
 }
 
-.rodape-container {
-  display: grid;
-  grid-template-columns: 1.2fr auto 1.2fr;
+.verso .validade-container {
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 2mm;
+  gap: 1.5mm;
+  margin-top: 4mm;
 }
-
-.rodape-texto-esquerda,
-.rodape-texto-direita {
-  font-size: 2mm;
-  font-weight: 600;
-  color: #374151;
-  text-transform: uppercase;
-}
-
-.logo-rodape {
+.verso .espaco-figura {
   width: 10mm;
   height: 10mm;
-  border-radius: 50%;
-  background: radial-gradient(circle at center, #fee2e2 0, #f97316 30%, #b91c1c 80%);
-  box-shadow:
-    0 0 0 0.6mm #fef2f2,
-    0 0 0 1.6mm rgba(248, 113, 113, 0.7);
+  border: 1px solid #ccc;
+}
+.verso .validade {
+  font-size: 1.6mm;
+  text-align: center;
+  margin-top: -12mm;
+  color: #006400;
 }
 
-/* ========= BORDAS / EFEITOS EXTRAS ========= */
+.verso .versiculo {
+  font-style: italic;
+  font-size: 2.5mm;
+  color: #333;
+  margin-bottom: -20mm;
+}
 
-.documento::before {
-  content: '';
+.verso .rodape-verso {
   position: absolute;
-  inset: 3mm;
-  border-radius: 3.5mm;
-  border: 0.4mm dashed rgba(15, 23, 42, 0.2);
-  pointer-events: none;
+  bottom: 3mm;
+  left: 3mm;
+  right: 3mm;
+  text-align: center;
+}
+.verso .rodape-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.verso .rodape-texto-esquerda,
+.verso .rodape-texto-direita {
+  font-size: 2mm;
+  font-weight: bold;
+  width: 42%;
+  margin-bottom: -8mm;
+}
+.verso .logo-rodape {
+  width: 30%;
+  height: 12mm;
+  /* AJUSTE: Caminho para a imagem na sua pasta public/images */
+  background: url('/images/IGREJA-LOGO.png') no-repeat center/contain;
+  margin-bottom: 6mm;
 }
 
-/* ========= RESPONSIVIDADE ========= */
-/* Mantém o modelo, mas evita cortes em telas menores */
-
-@media (max-width: 768px) {
-  body {
-    padding: 12px;
-  }
-
-  .documento {
-    transform-origin: top center;
-  }
-}
-
-@media (max-width: 480px) {
-  .documento {
-    transform: scale(0.92);
-  }
-}
-
-@media (max-width: 360px) {
-  .documento {
-    transform: scale(0.85);
-  }
-}
+/* AJUSTE: Caminhos para as imagens na sua pasta public/images */
+#figura1 { background: url('/images/JESUS-3.png') no-repeat center/contain; }
+#figura2 { background: url('/images/JESUS-2.png') no-repeat center/contain; }
+#figura3 { background: url('/images/JESUS.png') no-repeat center/contain; }
+#figura4 { background: url('/images/JESUS-4.png') no-repeat center/contain; }
